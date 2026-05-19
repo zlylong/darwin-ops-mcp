@@ -7,13 +7,20 @@ services:
       OPS_MCP_ADDR: ":8080"
       OPS_MCP_MODE: "mock"
       OPS_MCP_ENV: "development"
+      OPS_MCP_SEED_MOCK: "true"
       DATABASE_URL: "postgres://ops_mcp:ops_mcp@postgres:5432/ops_mcp?sslmode=disable"
-      REDIS_URL: "redis://redis:6379/0"
     ports:
       - "8080:8080"
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/healthz >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
   frontend:
     build:
       context: .
@@ -21,7 +28,9 @@ services:
     ports:
       - "5173:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+
   postgres:
     image: postgres:16-alpine
     environment:
@@ -32,9 +41,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ops_mcp -d ops_mcp"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
 volumes:
   postgres_data:

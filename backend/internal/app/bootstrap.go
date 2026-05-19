@@ -1,6 +1,8 @@
 package app
 
 import (
+	"time"
+
 	"github.com/zlylong/ops-mcp/backend/internal/adapters/kubernetes"
 	"github.com/zlylong/ops-mcp/backend/internal/adapters/prometheus"
 	"github.com/zlylong/ops-mcp/backend/internal/domain"
@@ -27,4 +29,76 @@ func RegisterMockTools(r *Registry, k8s *kubernetes.MockAdapter, prom *prometheu
 		}
 	}
 	return nil
+}
+
+func (r *Registry) SeedMockData() {
+	if len(r.Executions()) > 0 {
+		return
+	}
+	now := time.Now().UTC()
+	seeded := []domain.Execution{
+		{
+			ID:        "seed-exe-list-pods",
+			Tool:      "k8s.list_pods",
+			Actor:     "mock.user",
+			Role:      domain.RoleViewer,
+			Target:    "cluster=demo namespace=default",
+			Status:    "succeeded",
+			Reason:    "seeded mock execution",
+			AuditID:   "seed-aud-list-pods",
+			CreatedAt: now.Add(-35 * time.Minute),
+			Parameters: map[string]any{
+				"namespace": "default",
+			},
+			Result: map[string]any{
+				"pods": []map[string]any{
+					{"name": "api-7df6c9d5b6-vlz8p", "namespace": "default", "status": "Running", "restarts": 0},
+					{"name": "worker-778fd9c889-c8nwp", "namespace": "default", "status": "Running", "restarts": 1},
+				},
+			},
+		},
+		{
+			ID:        "seed-exe-error-rate",
+			Tool:      "prometheus.service_error_rate",
+			Actor:     "mock.operator",
+			Role:      domain.RoleOperator,
+			Target:    "service=api",
+			Status:    "succeeded",
+			Reason:    "seeded mock execution",
+			AuditID:   "seed-aud-error-rate",
+			CreatedAt: now.Add(-20 * time.Minute),
+			Parameters: map[string]any{
+				"service": "api",
+			},
+			Result: map[string]any{
+				"service":   "api",
+				"errorRate": 0.012,
+				"unit":      "ratio",
+			},
+		},
+		{
+			ID:        "seed-exe-validation",
+			Tool:      "k8s.get_pod_logs",
+			Actor:     "mock.user",
+			Role:      domain.RoleViewer,
+			Target:    "cluster=demo namespace=default",
+			Status:    "validation_failed",
+			Reason:    "missing required parameter: pod",
+			AuditID:   "seed-aud-validation",
+			CreatedAt: now.Add(-5 * time.Minute),
+			Parameters: map[string]any{
+				"namespace": "default",
+			},
+		},
+	}
+	for _, exe := range seeded {
+		r.executions.Add(exe)
+	}
+	for _, record := range []domain.AuditRecord{
+		{ID: "seed-aud-list-pods", ExecutionID: "seed-exe-list-pods", At: now.Add(-35 * time.Minute), Actor: "mock.user", Role: domain.RoleViewer, Action: "k8s.list_pods", Target: "cluster=demo namespace=default", Allowed: true, Reason: "seeded mock execution", Parameters: map[string]any{"namespace": "default"}},
+		{ID: "seed-aud-error-rate", ExecutionID: "seed-exe-error-rate", At: now.Add(-20 * time.Minute), Actor: "mock.operator", Role: domain.RoleOperator, Action: "prometheus.service_error_rate", Target: "service=api", Allowed: true, Reason: "seeded mock execution", Parameters: map[string]any{"service": "api"}},
+		{ID: "seed-aud-validation", ExecutionID: "seed-exe-validation", At: now.Add(-5 * time.Minute), Actor: "mock.user", Role: domain.RoleViewer, Action: "k8s.get_pod_logs", Target: "cluster=demo namespace=default", Allowed: false, Reason: "missing required parameter: pod", Parameters: map[string]any{"namespace": "default"}},
+	} {
+		r.auditor.Record(record)
+	}
 }

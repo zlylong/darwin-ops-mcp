@@ -1,24 +1,148 @@
 # ops-mcp
 
-Go-based Ops MCP platform with a React + TypeScript + Vite frontend. The backend MVP is **read-only by default**, runs in **mock mode** without real Kubernetes or Prometheus, and exposes a REST Admin API.
+Go-based Ops MCP platform with a React + TypeScript + Vite frontend. The default local experience is **safe mock mode**: it does not connect to a real Kubernetes cluster or Prometheus server, and it seeds sample tools, executions, and audit logs so a non-programmer can try the product immediately.
 
 ## What is included
 
 - Go backend using Gin
 - React + TypeScript + Vite frontend using Ant Design, TanStack Query, React Router, ECharts, and Monaco Editor
-- PostgreSQL connection support and Docker Compose PostgreSQL service
-- Optional Redis service in Docker Compose
-- JSON config file support via `--config` or `OPS_MCP_CONFIG`
+- Docker Compose stack with exactly three app services: `backend`, `frontend`, and `postgres`
+- Seed data for mock mode
 - Tool Registry, Policy Engine, Audit System, Execution History, and Approval Flow skeleton
 - Kubernetes mock adapter
 - Prometheus mock adapter
 - Documentation in `docs/`
 
-## Quick start
+## 1. How to start the project
 
-Prerequisites: Go 1.25+, Node.js 20+, npm, Docker Compose.
+The easiest path is Docker. Install Docker Desktop or Docker Engine with the Compose plugin, then run this from the repository root:
 
 ```bash
+make docker-up
+```
+
+This builds and starts:
+
+- `backend` on port `8080`
+- `frontend` on port `5173`
+- `postgres` on port `5432`
+
+Check that the backend is healthy:
+
+```bash
+curl http://localhost:8080/healthz
+```
+
+You should see JSON with `"mode":"mock"` plus counts for tools, executions, and audit records.
+
+## 2. How to open the frontend
+
+Open this URL in your browser:
+
+```text
+http://localhost:5173
+```
+
+The frontend proxies `/api` requests to the backend container, so no extra configuration is needed.
+
+## 3. How to login or use mock user
+
+There is no password login in this MVP. Use the built-in mock identity when executing tools:
+
+- Actor: `mock.user`
+- Role: `viewer`
+- Target: `cluster=demo namespace=default`
+
+The default Docker stack sets:
+
+```text
+OPS_MCP_MODE=mock
+OPS_MCP_SEED_MOCK=true
+```
+
+That means the app starts with sample executions and audit logs already visible.
+
+## 4. How to execute a sample tool
+
+From the frontend:
+
+1. Open `http://localhost:5173`.
+2. Go to **Tool Center**.
+3. Click **Execute** for `k8s.list_pods`.
+4. Use this JSON input:
+
+```json
+{
+  "namespace": "default"
+}
+```
+
+5. Confirm/submit the execution.
+6. The result should show mock Kubernetes pods.
+
+You can also test the same flow with curl:
+
+```bash
+curl -s http://localhost:8080/api/v1/tools/k8s.list_pods/execute \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "actor": "mock.user",
+    "role": "viewer",
+    "target": "cluster=demo namespace=default",
+    "parameters": {"namespace": "default"}
+  }'
+```
+
+## 5. How to view audit logs
+
+From the frontend:
+
+1. Open `http://localhost:5173`.
+2. Go to **Audit Center**.
+3. You will see seeded mock audit events and any new tool executions.
+4. Click a row to inspect details.
+
+With curl:
+
+```bash
+curl http://localhost:8080/api/v1/audit
+```
+
+Sensitive parameter names such as `password`, `secret`, `token`, `api_key`, and `authorization` are masked before audit records are stored.
+
+## 6. How to stop the project
+
+Stop containers but keep the PostgreSQL volume:
+
+```bash
+make docker-down
+```
+
+Stop containers and reset the local PostgreSQL volume:
+
+```bash
+make reset-db
+```
+
+After `make reset-db`, run `make docker-up` again to start a fresh stack.
+
+## Common commands
+
+```bash
+make setup        # install Go and frontend dependencies for local development
+make dev          # run backend and frontend dev servers without Docker
+make test         # run backend tests and frontend type checks
+make docker-up    # build and start backend, frontend, postgres in Docker
+make docker-down  # stop Docker containers, keep database volume
+make reset-db     # stop Docker containers and delete the database volume
+```
+
+## Local development without Docker
+
+Prerequisites: Go 1.25+, Node.js 20+, npm.
+
+```bash
+make setup
 make dev
 ```
 
@@ -26,26 +150,6 @@ Then open:
 
 - Frontend: http://localhost:5173
 - Backend health: http://localhost:8080/healthz
-
-## Docker local development
-
-```bash
-make docker-up
-make docker-down
-```
-
-Docker Compose starts backend, frontend, PostgreSQL, and Redis. The backend still uses `OPS_MCP_MODE=mock`, so it is safe without a real cluster.
-
-## Common commands
-
-```bash
-make dev          # run backend and frontend dev servers
-make test         # run backend tests and frontend type checks
-make lint         # gofmt/go vet and frontend type checks
-make build        # build backend binary and frontend assets
-make docker-up    # compose up --build
-make docker-down  # compose down -v
-```
 
 ## Configuration
 
@@ -62,9 +166,9 @@ Backend environment variables override config file values:
 - `OPS_MCP_ADDR` default `:8080`
 - `OPS_MCP_MODE` default `mock`
 - `OPS_MCP_ENV` default `development`; production write tools require approval
+- `OPS_MCP_SEED_MOCK` default `true`; set to `false` to start without sample executions/audit logs
 - `OPS_MCP_CONFIG` optional JSON config file path
 - `DATABASE_URL` PostgreSQL connection string
-- `REDIS_URL` optional Redis connection string
 
 Frontend environment variables:
 

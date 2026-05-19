@@ -10,16 +10,17 @@ import (
 )
 
 type Config struct {
-	Addr        string             `json:"addr"`
-	Mode        string             `json:"mode"`
-	Environment domain.Environment `json:"environment"`
-	DatabaseURL string             `json:"databaseUrl"`
-	RedisURL    string             `json:"redisUrl"`
-	ConfigFile  string             `json:"-"`
+	Addr         string             `json:"addr"`
+	Mode         string             `json:"mode"`
+	Environment  domain.Environment `json:"environment"`
+	DatabaseURL  string             `json:"databaseUrl"`
+	RedisURL     string             `json:"redisUrl"`
+	SeedMockData bool               `json:"seedMockData"`
+	ConfigFile   string             `json:"-"`
 }
 
 func Default() Config {
-	return Config{Addr: ":8080", Mode: "mock", Environment: domain.EnvDevelopment}
+	return Config{Addr: ":8080", Mode: "mock", Environment: domain.EnvDevelopment, SeedMockData: true}
 }
 
 func Load() (Config, error) {
@@ -101,5 +102,17 @@ func applyEnv(cfg *Config) {
 	}
 	if value := os.Getenv("REDIS_URL"); value != "" {
 		cfg.RedisURL = value
+	}
+	if value := os.Getenv("OPS_MCP_SEED_MOCK"); value != "" {
+		cfg.SeedMockData = truthy(value)
+	}
+}
+
+func truthy(value string) bool {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "", "0", "false", "no", "off":
+		return false
+	default:
+		return true
 	}
 }

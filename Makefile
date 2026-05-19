@@ -1,10 +1,14 @@
-.PHONY: dev test lint build docker-up docker-down backend-dev frontend-dev
+.PHONY: setup dev test lint build docker-up docker-down reset-db backend-dev frontend-dev
+
+setup:
+	go mod download
+	cd frontend && npm install
 
 dev:
 	$(MAKE) -j2 backend-dev frontend-dev
 
 backend-dev:
-	OPS_MCP_MODE=mock go run ./backend/cmd/server
+	OPS_MCP_MODE=mock OPS_MCP_SEED_MOCK=true go run ./backend/cmd/server
 
 frontend-dev:
 	cd frontend && npm install && npm run dev
@@ -23,7 +27,14 @@ build:
 	cd frontend && npm install && npm run build
 
 docker-up:
-	docker compose up --build
+	docker compose up --build -d
+	@echo ""
+	@echo "ops-mcp is starting. Open the frontend at: http://localhost:5173"
+	@echo "Backend health check:              http://localhost:8080/healthz"
 
 docker-down:
+	docker compose down
+
+reset-db:
 	docker compose down -v
+	@echo "PostgreSQL volume reset. Run 'make docker-up' to start a fresh stack."

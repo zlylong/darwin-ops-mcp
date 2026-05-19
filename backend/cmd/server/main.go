@@ -38,10 +38,16 @@ func main() {
 		defer db.Close()
 	}
 	auditor := audit.NewStore(logger)
-	registry := app.NewRegistry(policy.NewEngine(), auditor, storage.NewExecutionStore(), storage.NewApprovalStore(), cfg.Environment)
+	executions := storage.NewExecutionStore()
+	approvals := storage.NewApprovalStore()
+	registry := app.NewRegistry(policy.NewEngine(), auditor, executions, approvals, cfg.Environment)
 	if err := app.RegisterMockTools(registry, kubernetes.NewMockAdapter(), prometheus.NewMockAdapter()); err != nil {
 		logger.Error("register tools", "error", err)
 		os.Exit(1)
+	}
+	if cfg.Mode == "mock" && cfg.SeedMockData {
+		registry.SeedMockData()
+		logger.Info("seeded mock data", "executions", len(registry.Executions()), "auditRecords", len(auditor.List()))
 	}
 	srv := &http.Server{Addr: cfg.Addr, Handler: api.NewRouter(cfg, registry, auditor, logger), ReadHeaderTimeout: 5 * time.Second}
 	go func() {
