@@ -1,20 +1,20 @@
-# API
+# API（中文版）
 
-> 中文版：[API.zh-CN.md](API.zh-CN.md)
+Base URL：`/api/v1`
 
-Base URL: `/api/v1`
+> English version: [API.md](API.md)
 
 ## Health
 
 `GET /healthz`
 
-Returns backend status, mode, and environment.
+返回后端状态、模式和环境。
 
 ## Dashboard summary
 
 `GET /api/v1/dashboard/summary`
 
-Response example:
+响应示例：
 
 ```json
 {
@@ -31,13 +31,13 @@ Response example:
 
 `GET /api/v1/tools`
 
-Lists registered tools.
+列出已注册工具。
 
 `GET /api/v1/tools/:name`
 
-Returns one tool detail, including category, read-only flag, risk, approval requirement, and input schema.
+返回单个工具详情，包括分类、是否只读、风险等级、是否需要审批以及输入 schema。
 
-Implemented tools:
+已实现工具：
 
 - `k8s.list_pods`
 - `k8s.get_pod_logs`
@@ -53,7 +53,7 @@ Implemented tools:
 
 `POST /api/v1/tools/:name/execute`
 
-Request:
+请求：
 
 ```json
 {
@@ -67,7 +67,7 @@ Request:
 }
 ```
 
-Successful response:
+成功响应：
 
 ```json
 {
@@ -79,42 +79,42 @@ Successful response:
 }
 ```
 
-Error responses:
+错误响应：
 
-- `400` invalid JSON or input validation failure
-- `403` policy denied
-- `404` unknown tool
-- `409` approval required
-- `500` adapter execution failed
+- `400` JSON 无效或输入校验失败
+- `403` 策略拒绝
+- `404` 未知工具
+- `409` 需要审批
+- `500` adapter 执行失败
 
 ## Execution History
 
 `GET /api/v1/executions`
 
-Lists executions newest first.
+按时间倒序列出执行记录。
 
 `GET /api/v1/executions/:id`
 
-Returns one execution record.
+返回单条执行记录。
 
 ## Audit
 
 `GET /api/v1/audit`
 
-Returns in-memory audit records newest first. Sensitive parameter keys such as password, token, secret, api key, authorization, and credential are masked.
+按时间倒序返回内存中的审计记录。包含 password、token、secret、api key、authorization 和 credential 等敏感标记的参数 key 会被脱敏。
 
 ## Approval Flow Skeleton
 
 `GET /api/v1/approvals`
 
-Lists approval requests.
+列出审批请求。
 
 `POST /api/v1/approvals/:id/approve`
 
-Marks an approval as approved.
+将审批标记为 approved。
 
 `POST /api/v1/approvals/:id/reject`
 
-Marks an approval as rejected.
+将审批标记为 rejected。
 
-The MVP approval endpoints update approval state only. They do not automatically replay blocked executions yet.
+MVP 的审批接口目前只更新审批状态，尚不会自动重放被阻止的执行。

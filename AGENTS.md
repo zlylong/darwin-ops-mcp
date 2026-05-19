@@ -1,5 +1,7 @@
 # AGENTS.md
 
+> 中文版：[AGENTS.zh-CN.md](AGENTS.zh-CN.md)
+
 This repository is **ops-mcp**, an Ops MCP platform with a Go backend and React + TypeScript + Vite frontend.
 
 These are permanent rules for Codex and other coding agents working in this repository.

@@ -1,5 +1,7 @@
 # Security
 
+> 中文版：[SECURITY.zh-CN.md](SECURITY.zh-CN.md)
+
 ## Security-first backend flow
 
 Every tool execution must pass through:

@@ -1,0 +1,58 @@
+# 安全（中文版）
+
+> English version: [SECURITY.md](SECURITY.md)
+
+## 安全优先的后端流程
+
+每次工具执行都必须经过：
+
+1. Tool Registry 查询
+2. 输入校验
+3. Policy Engine 评估
+4. 仅在允许时执行 adapter
+5. 创建 Audit Record
+6. 持久化 Execution History
+
+## 非目标与禁止能力
+
+平台有意不实现：
+
+- 任意 Shell 执行
+- `kubectl exec`
+- Namespace 删除
+- PVC 删除
+- Workload/resource 删除工具
+- 硬编码凭据
+
+未知、不安全或未来新增的 critical 工具请求必须默认拒绝。
+
+## 策略规则
+
+- `viewer` 可以执行只读工具。
+- `operator` 只能在 `development` 或 `staging` 中执行中风险写工具。
+- 生产环境写操作需要显式审批。
+- critical 工具默认拒绝，即使是 admin 也一样；除非未来经过评审的策略明确允许。
+
+## 审计脱敏
+
+审计记录会脱敏敏感输入字段。包含以下标记的 key 会被替换为 `***MASKED***`：
+
+- `password`
+- `secret`
+- `token`
+- `api_key`
+- `apikey`
+- `authorization`
+- `credential`
+
+## Mock mode
+
+`OPS_MCP_MODE=mock` 是默认模式。mock adapter 返回确定性的 Kubernetes 和 Prometheus 数据，不会访问外部基础设施。
+
+## PostgreSQL
+
+MVP 包含 PostgreSQL 连接支持和 Docker Compose PostgreSQL。在 mock mode 中，执行历史、审批和审计记录存储在内存中。生产实现应将这些记录持久化到 PostgreSQL，并提供不可篡改的审计保留机制。
+
+## Secrets
+
+不要提交真实 kubeconfig、Prometheus 凭据、数据库密码、API key 或 token。未来部署应使用环境变量或 secret manager。

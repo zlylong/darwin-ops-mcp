@@ -1,5 +1,7 @@
 # Architecture
 
+> 中文版：[ARCHITECTURE.zh-CN.md](ARCHITECTURE.zh-CN.md)
+
 ops-mcp is a Docker-first full-stack operations platform.
 
 ## Components

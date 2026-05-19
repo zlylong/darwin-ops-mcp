@@ -1,5 +1,7 @@
 # ops-mcp
 
+> 中文版：[README.zh-CN.md](README.zh-CN.md)
+
 Go-based Ops MCP platform with a React + TypeScript + Vite frontend. The default local experience is **safe mock mode**: it does not connect to a real Kubernetes cluster or Prometheus server, and it seeds sample tools, executions, and audit logs so a non-programmer can try the product immediately.
 
 ## What is included
