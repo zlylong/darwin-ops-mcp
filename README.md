@@ -5,7 +5,7 @@ Go-based Ops MCP platform with a React + TypeScript + Vite frontend. The backend
 ## What is included
 
 - Go backend using Gin
-- React + TypeScript + Vite frontend using Ant Design
+- React + TypeScript + Vite frontend using Ant Design, TanStack Query, React Router, ECharts, and Monaco Editor
 - PostgreSQL connection support and Docker Compose PostgreSQL service
 - Optional Redis service in Docker Compose
 - JSON config file support via `--config` or `OPS_MCP_CONFIG`
@@ -69,6 +69,21 @@ Backend environment variables override config file values:
 Frontend environment variables:
 
 - `VITE_API_BASE` optional explicit API base URL. Empty means same-origin/proxy.
+- `VITE_MOCK_API=true` enables the browser-side mock API client for UI-only demos without backend.
+
+## Frontend MVP pages
+
+The frontend includes a left sidebar layout, top environment selector, top cluster selector, and user area. Implemented pages:
+
+- Dashboard with alert/approval/execution statistics, recent executions, and risk distribution chart
+- Tool Center with search, category/risk/read-only filters, schema viewer, and Monaco JSON execution modal
+- Tool Detail
+- Execution Center and Execution Detail with input/output JSON, policy decision, and audit ID
+- Audit Center with user/tool/environment/risk/status filters and detail drawer
+- Approval Center with pending approvals and approve/reject actions
+- Kubernetes Overview with namespace selector, pod/event tables, deployment cards, and logs viewer
+- Prometheus Query with quick queries, PromQL editor, chart result, and raw JSON viewer
+- Settings
 
 ## Implemented tools
 
