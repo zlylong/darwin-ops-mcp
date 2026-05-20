@@ -18,16 +18,17 @@ async function requestJSON<T>(path: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
+const mockExecutions: Execution[] = [];
+const mockAudit: AuditEvent[] = [];
+const mockApprovals: Approval[] = [];
+const mockTools: Tool[] = [
+  { name: 'k8s.list_pods', description: 'List Kubernetes pods in a namespace.', category: 'kubernetes', readOnly: true, risk: 'low', requiresApproval: false, inputSchema: { namespace: 'string?' } },
+  { name: 'k8s.get_pod_logs', description: 'Fetch pod logs.', category: 'kubernetes', readOnly: true, risk: 'medium', requiresApproval: false, inputSchema: { pod: 'string', namespace: 'string?' } },
+  { name: 'prometheus.query', description: 'Run a read-only PromQL query.', category: 'prometheus', readOnly: true, risk: 'medium', requiresApproval: false, inputSchema: { query: 'string' } },
+];
+
 async function mockRequest<T>(path: string, init?: RequestInit): Promise<T> {
   await new Promise((resolve) => setTimeout(resolve, 180));
-  const mockExecutions: Execution[] = [];
-  const mockAudit: AuditEvent[] = [];
-  const mockApprovals: Approval[] = [];
-  const mockTools: Tool[] = [
-    { name: 'k8s.list_pods', description: 'List Kubernetes pods in a namespace.', category: 'kubernetes', readOnly: true, risk: 'low', requiresApproval: false, inputSchema: { namespace: 'string' } },
-    { name: 'prometheus.query', description: 'Run a read-only PromQL query.', category: 'prometheus', readOnly: true, risk: 'low', requiresApproval: false, inputSchema: { query: 'string' } },
-  ];
-  
   if (path === '/api/v1/dashboard/summary') return { mode: 'mock', environment: 'development', tools: mockTools.length, executions: mockExecutions.length, auditRecords: mockAudit.length, approvals: mockApprovals.length } as T;
   if (path === '/api/v1/tools') return mockTools as T;
   if (path.startsWith('/api/v1/tools/') && path.endsWith('/execute')) {
@@ -36,10 +37,17 @@ async function mockRequest<T>(path: string, init?: RequestInit): Promise<T> {
     const tool = mockTools.find((item) => item.name === name);
     if (!tool) throw new ApiError(404, { error: 'tool not found' });
     const now = new Date().toISOString();
-    const execution: Execution = { id: `mock-exe-${Date.now()}`, tool: name, actor: req.actor, role: req.role, target: req.target, status: 'succeeded', reason: 'mock executed', parameters: req.parameters, result: mockToolData(name, req.parameters), auditId: `mock-aud-${Date.now()}`, createdAt: now };
+    if (tool.risk !== 'low' && !req.approved) {
+      const approval: Approval = { id: `mock-app-${Date.now()}`, executionId: '', tool: name, actor: req.actor, target: req.target, status: 'pending', reason: `pending approval for ${tool.risk}`, createdAt: now };
+      mockApprovals.unshift(approval);
+      const execution: Execution = { id: `mock-exe-${Date.now()}`, tool: name, actor: req.actor, role: req.role, target: req.target, status: 'pending_approval', reason: 'pending approval', parameters: req.parameters, auditId: '', createdAt: now };
+      mockExecutions.unshift(execution);
+      return { executionId: execution.id, approvalId: approval.id, auditId: '', status: 'pending_approval', message: 'pending approval' } as T;
+    }
+    const execution: Execution = { id: `mock-exe-${Date.now()}`, tool: name, actor: req.actor, role: req.role, target: req.target, status: 'completed', reason: 'approved', parameters: req.parameters, result: mockToolData(name, req.parameters), auditId: `mock-aud-${Date.now()}`, createdAt: now };
     mockExecutions.unshift(execution);
-    mockAudit.unshift({ id: execution.auditId, executionId: execution.id, at: now, actor: req.actor, role: req.role, action: name, target: req.target, allowed: true, reason: 'mock executed', parameters: req.parameters });
-    return { executionId: execution.id, auditId: execution.auditId, status: 'succeeded', message: 'mock tool executed', data: execution.result } as T;
+    mockAudit.unshift({ id: execution.auditId, executionId: execution.id, at: now, actor: req.actor, role: req.role, action: `tool.${name}`, target: req.target, allowed: true, reason: 'approved', parameters: req.parameters });
+    return { executionId: execution.id, auditId: execution.auditId, status: 'completed', message: 'mock tool executed', data: execution.result } as T;
   }
   if (path.startsWith('/api/v1/tools/')) {
     const name = decodeURIComponent(path.replace('/api/v1/tools/', ''));
@@ -56,7 +64,14 @@ async function mockRequest<T>(path: string, init?: RequestInit): Promise<T> {
   }
   if (path === '/api/v1/audit') return mockAudit as T;
   if (path === '/api/v1/approvals') return mockApprovals as T;
-  if (path.includes('/approve') || path.includes('/reject')) return {} as T;
+  if (path.includes('/approve') || path.includes('/reject')) {
+    const id = decodeURIComponent(path.split('/')[4] ?? '');
+    const approval = mockApprovals.find((item) => item.id === id);
+    if (!approval) throw new ApiError(404, { error: 'approval not found' });
+    approval.status = path.endsWith('/approve') ? 'approved' : 'rejected';
+    approval.decidedAt = new Date().toISOString();
+    return approval as T;
+  }
   if (path === '/healthz') return { status: 'ok', mode: 'mock', environment: 'development' } as T;
   throw new ApiError(404, { error: 'mock route not found' });
 }

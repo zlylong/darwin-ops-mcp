@@ -36,17 +36,11 @@ body {
   flex-wrap: wrap;
 }
 
-.top-select {
-  min-width: 170px;
-}
-
 .main-content {
   padding: 24px;
 }
 
-.page {
-  width: 100%;
-}
+.page { width: 100%; }
 
 .page-title {
   display: flex;
@@ -56,57 +50,30 @@ body {
   flex-wrap: wrap;
 }
 
-.page-title h2 {
-  margin: 0 0 4px;
-}
+.page-title h2 { margin: 0 0 4px; }
+.full { width: 100%; }
+.section { margin-top: 16px; }
+.toolbar { margin-bottom: 4px; }
+.json-input { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
 
-.full {
-  width: 100%;
-}
-
-.filter {
-  min-width: 180px;
-}
-
-.run-button {
-  margin-top: 12px;
-}
-
-.logs {
-  min-height: 280px;
-  margin: 0;
-  padding: 14px;
+.json-block {
   overflow: auto;
-  color: #d6e4ff;
-  background: #111827;
+  padding: 12px;
+  background: #0f172a;
   border-radius: 10px;
+}
+
+.json-block pre {
+  margin: 0;
+  color: #dbeafe;
   white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 12px;
 }
 
-.ant-card {
-  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
-}
-
-.ant-layout-sider-zero-width-trigger {
-  top: 10px;
-}
-
-@media (max-width: 768px) {
-  .main-content {
-    padding: 16px;
-  }
-
-  .topbar {
-    padding-left: 48px;
-  }
-}
-
-.user-menu {
-  position: fixed;
-  top: 16px;
-  right: 18px;
-  z-index: 1000;
-}
+.ant-card { box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04); }
+.ant-table-row { cursor: pointer; }
+.ant-layout-sider-zero-width-trigger { top: 10px; }
 
 .user-menu-trigger {
   cursor: pointer;
@@ -135,17 +102,8 @@ body {
 }
 
 @media (max-width: 768px) {
-  .user-menu {
-    top: 12px;
-    right: 12px;
-  }
-
-  .user-menu-trigger {
-    padding: 6px 9px;
-  }
-
-  .app-version {
-    left: 12px;
-    bottom: 10px;
-  }
+  .main-content { padding: 16px; }
+  .topbar { padding-left: 48px; }
+  .user-menu-trigger { padding: 6px 9px; }
+  .app-version { left: 12px; bottom: 10px; }
 }
