@@ -27,7 +27,7 @@ func NewRouter(cfg config.Config, registry *app.Registry, auditor audit.Recorder
 	r.GET("/healthz", s.health)
 	
 	// Swagger UI
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.NewHandler()))
 	
 	v1 := r.Group("/api/v1")
 	v1.GET("/dashboard/summary", s.dashboardSummary)
