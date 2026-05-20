@@ -6,6 +6,7 @@ COPY backend ./backend
 RUN go install github.com/swaggo/swag/cmd/swag@latest
 WORKDIR /src/backend
 RUN swag init --generalInfo internal/api/api.go --output docs
+RUN mv docs swagger
 WORKDIR /src
 RUN CGO_ENABLED=0 go build -o /out/ops-mcp ./backend/cmd/server
 
@@ -14,7 +15,6 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=build /out/ops-mcp /usr/local/bin/ops-mcp
-COPY --from=build /src/backend/docs /root/ops-mcp/backend/docs
 ENV OPS_MCP_ADDR=:8080 OPS_MCP_MODE=mock OPS_MCP_SEED_MOCK=true
 EXPOSE 8080
 CMD ["ops-mcp"]
