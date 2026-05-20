@@ -1,14 +1,16 @@
+name: darwin-ops-mcp
+
 services:
   backend:
     build:
       context: .
       dockerfile: Dockerfile.backend
     environment:
-      OPS_MCP_ADDR: ":8080"
-      OPS_MCP_MODE: "mock"
-      OPS_MCP_ENV: "development"
-      OPS_MCP_SEED_MOCK: "true"
-      DATABASE_URL: "postgres://ops_mcp:ops_mcp@postgres:5432/ops_mcp?sslmode=disable"
+      DARWIN_OPS_MCP_ADDR: ":8080"
+      DARWIN_OPS_MCP_MODE: "mock"
+      DARWIN_OPS_MCP_ENV: "development"
+      DARWIN_OPS_MCP_SEED_MOCK: "true"
+      DATABASE_URL: "postgres://darwin_ops_mcp:darwin_ops_mcp@postgres:5432/darwin_ops_mcp?sslmode=disable"
     ports:
       - "8080:8080"
     depends_on:
@@ -34,15 +36,15 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: ops_mcp
-      POSTGRES_PASSWORD: ops_mcp
-      POSTGRES_DB: ops_mcp
+      POSTGRES_USER: darwin_ops_mcp
+      POSTGRES_PASSWORD: darwin_ops_mcp
+      POSTGRES_DB: darwin_ops_mcp
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ops_mcp -d ops_mcp"]
+      test: ["CMD-SHELL", "pg_isready -U darwin_ops_mcp -d darwin_ops_mcp"]
       interval: 5s
       timeout: 3s
       retries: 20

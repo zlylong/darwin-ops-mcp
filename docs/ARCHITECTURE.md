@@ -2,7 +2,7 @@
 
 > 中文版：[ARCHITECTURE.zh-CN.md](ARCHITECTURE.zh-CN.md)
 
-ops-mcp is a Docker-first full-stack operations platform.
+darwin-ops-mcp is a Docker-first full-stack operations platform.
 
 ## Components
 
@@ -24,7 +24,7 @@ ops-mcp is a Docker-first full-stack operations platform.
 
 ## Mock mode
 
-`OPS_MCP_MODE=mock` is the default. Mock mode returns deterministic Kubernetes and Prometheus data and performs no real infrastructure calls.
+`DARWIN_OPS_MCP_MODE=mock` is the default. Mock mode returns deterministic Kubernetes and Prometheus data and performs no real infrastructure calls.
 
 ## API style
 

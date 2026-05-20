@@ -1,6 +1,6 @@
 # 架构（中文版）
 
-ops-mcp 是一个 Docker-first 的全栈运维平台。
+darwin-ops-mcp 是一个 Docker-first 的全栈运维平台。
 
 > English version: [ARCHITECTURE.md](ARCHITECTURE.md)
 
@@ -24,7 +24,7 @@ ops-mcp 是一个 Docker-first 的全栈运维平台。
 
 ## Mock mode
 
-`OPS_MCP_MODE=mock` 是默认模式。mock mode 返回确定性的 Kubernetes 和 Prometheus 数据，不会调用真实基础设施。
+`DARWIN_OPS_MCP_MODE=mock` 是默认模式。mock mode 返回确定性的 Kubernetes 和 Prometheus 数据，不会调用真实基础设施。
 
 ## API 风格
 

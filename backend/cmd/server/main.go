@@ -10,15 +10,15 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/zlylong/ops-mcp/backend/internal/adapters/kubernetes"
-	"github.com/zlylong/ops-mcp/backend/internal/adapters/linux"
-	"github.com/zlylong/ops-mcp/backend/internal/adapters/prometheus"
-	"github.com/zlylong/ops-mcp/backend/internal/api"
-	"github.com/zlylong/ops-mcp/backend/internal/app"
-	"github.com/zlylong/ops-mcp/backend/internal/audit"
-	"github.com/zlylong/ops-mcp/backend/internal/config"
-	"github.com/zlylong/ops-mcp/backend/internal/policy"
-	"github.com/zlylong/ops-mcp/backend/internal/storage"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/adapters/kubernetes"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/adapters/linux"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/adapters/prometheus"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/api"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/app"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/audit"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/config"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/policy"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/storage"
 )
 
 func main() {
@@ -52,7 +52,7 @@ func main() {
 	}
 	srv := &http.Server{Addr: cfg.Addr, Handler: api.NewRouter(cfg, registry, auditor, logger), ReadHeaderTimeout: 5 * time.Second}
 	go func() {
-		logger.Info("ops-mcp backend starting", "addr", cfg.Addr, "mode", cfg.Mode, "environment", cfg.Environment)
+		logger.Info("darwin-ops-mcp backend starting", "addr", cfg.Addr, "mode", cfg.Mode, "environment", cfg.Environment)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Error("server failed", "error", err)
 			os.Exit(1)

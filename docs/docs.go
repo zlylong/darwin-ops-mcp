@@ -12,7 +12,7 @@ const docTemplate = `{
         "contact": {
             "name": "API Support",
             "url": "http://localhost:8080",
-            "email": "support@ops-mcp.local"
+            "email": "support@darwin-ops-mcp.local"
         },
         "license": {
             "name": "MIT",
@@ -498,8 +498,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
-	Title:            "Ops MCP API",
-	Description:      "Ops MCP Backend API with Tool Registry, Policy Engine, and Approval Flow.",
+	Title:            "Darwin Ops MCP API",
+	Description:      "Darwin Ops MCP Backend API with Tool Registry, Policy Engine, and Approval Flow.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

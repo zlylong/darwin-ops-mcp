@@ -8,11 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
-	"github.com/zlylong/ops-mcp/backend/internal/app"
-	"github.com/zlylong/ops-mcp/backend/internal/audit"
-	"github.com/zlylong/ops-mcp/backend/internal/config"
-	"github.com/zlylong/ops-mcp/backend/internal/domain"
-	_ "github.com/zlylong/ops-mcp/docs"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/app"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/audit"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/config"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/domain"
+	_ "github.com/zlylong/darwin-ops-mcp/docs"
 )
 
 type Server struct {

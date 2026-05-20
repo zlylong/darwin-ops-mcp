@@ -1,6 +1,6 @@
 # Testing Guide
 
-This document describes the testing strategy and implementation for the ops-mcp backend.
+This document describes the testing strategy and implementation for the darwin-ops-mcp backend.
 
 ## Overview
 

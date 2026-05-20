@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/zlylong/ops-mcp/backend/internal/domain"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/domain"
 )
 
 func TestStore_Record(t *testing.T) {
@@ -88,12 +88,12 @@ func TestStore_List(t *testing.T) {
 
 func TestMask_SensitiveKeys(t *testing.T) {
 	input := map[string]any{
-		"username":      "john",
-		"password":      "secret123",
-		"token":         "abc123",
-		"api_key":       "key123",
-		"normal_field":  "value",
-		"nested":        map[string]any{"secret_key": "hidden"},
+		"username":     "john",
+		"password":     "secret123",
+		"token":        "abc123",
+		"api_key":      "key123",
+		"normal_field": "value",
+		"nested":       map[string]any{"secret_key": "hidden"},
 	}
 
 	masked := Mask(input)

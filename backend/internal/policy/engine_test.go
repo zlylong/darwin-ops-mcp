@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/zlylong/ops-mcp/backend/internal/domain"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/domain"
 )
 
 func TestEngine_Evaluate_CriticalTool(t *testing.T) {

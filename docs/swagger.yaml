@@ -2,15 +2,15 @@ basePath: /api/v1
 host: localhost:8080
 info:
   contact:
-    email: support@ops-mcp.local
+    email: support@darwin-ops-mcp.local
     name: API Support
     url: http://localhost:8080
-  description: Ops MCP Backend API with Tool Registry, Policy Engine, and Approval
+  description: Darwin Ops MCP Backend API with Tool Registry, Policy Engine, and Approval
     Flow.
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
-  title: Ops MCP API
+  title: Darwin Ops MCP API
   version: "1.0"
 paths:
   /approvals:

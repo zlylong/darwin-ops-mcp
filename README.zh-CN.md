@@ -1,6 +1,6 @@
-# ops-mcp
+# darwin-ops-mcp
 
-基于 Go 的 Ops MCP 运维平台，配套 React + TypeScript + Vite 前端。默认本地体验是**安全 mock mode**：不会连接真实 Kubernetes 集群或 Prometheus 服务，并会自动填充示例工具、执行记录和审计日志，方便非程序员立即体验产品。
+基于 Go 的 Darwin Ops MCP 运维平台，配套 React + TypeScript + Vite 前端。默认本地体验是**安全 mock mode**：不会连接真实 Kubernetes 集群或 Prometheus 服务，并会自动填充示例工具、执行记录和审计日志，方便非程序员立即体验产品。
 
 > English version: [README.md](README.md)
 
@@ -60,8 +60,8 @@ http://localhost:5173
 默认 Docker 栈会设置：
 
 ```text
-OPS_MCP_MODE=mock
-OPS_MCP_SEED_MOCK=true
+DARWIN_OPS_MCP_MODE=mock
+DARWIN_OPS_MCP_SEED_MOCK=true
 ```
 
 这意味着应用启动后会自动显示示例执行记录和审计日志。
@@ -160,18 +160,21 @@ make dev
 默认配置是安全 mock mode。可以使用 JSON 配置文件：
 
 ```bash
-OPS_MCP_CONFIG=config.example.json go run ./backend/cmd/server
+DARWIN_OPS_MCP_CONFIG=config.example.json go run ./backend/cmd/server
 # 或
 go run ./backend/cmd/server --config config.example.json
 ```
 
 后端环境变量会覆盖配置文件值：
 
-- `OPS_MCP_ADDR` 默认 `:8080`
-- `OPS_MCP_MODE` 默认 `mock`
-- `OPS_MCP_ENV` 默认 `development`；生产环境写工具需要审批
-- `OPS_MCP_SEED_MOCK` 默认 `true`；设为 `false` 可不生成示例执行/审计日志
-- `OPS_MCP_CONFIG` 可选 JSON 配置文件路径
+旧的 `OPS_MCP_*` 和 `MCP_*` 前缀仍会被兼容读取，但新部署建议使用 `DARWIN_OPS_MCP_*`。
+
+
+- `DARWIN_OPS_MCP_ADDR` 默认 `:8080`
+- `DARWIN_OPS_MCP_MODE` 默认 `mock`
+- `DARWIN_OPS_MCP_ENV` 默认 `development`；生产环境写工具需要审批
+- `DARWIN_OPS_MCP_SEED_MOCK` 默认 `true`；设为 `false` 可不生成示例执行/审计日志
+- `DARWIN_OPS_MCP_CONFIG` 可选 JSON 配置文件路径
 - `DATABASE_URL` PostgreSQL 连接字符串
 
 前端环境变量：

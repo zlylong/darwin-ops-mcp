@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/zlylong/ops-mcp/backend/internal/domain"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/domain"
 )
 
 type Recorder interface {

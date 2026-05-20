@@ -1,6 +1,6 @@
 package api
 
-import "github.com/zlylong/ops-mcp/backend/internal/domain"
+import "github.com/zlylong/darwin-ops-mcp/backend/internal/domain"
 
 type executeHTTP struct {
 	Actor      string         `json:"actor"`

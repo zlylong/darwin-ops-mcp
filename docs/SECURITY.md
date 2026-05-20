@@ -47,7 +47,7 @@ Audit records mask sensitive input fields. Keys containing these markers are rep
 
 ## Mock mode
 
-`OPS_MCP_MODE=mock` is the default. Mock adapters return deterministic Kubernetes and Prometheus data and do not contact external infrastructure.
+`DARWIN_OPS_MCP_MODE=mock` is the default. Mock adapters return deterministic Kubernetes and Prometheus data and do not contact external infrastructure.
 
 ## PostgreSQL
 

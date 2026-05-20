@@ -1,12 +1,12 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "Ops MCP Backend API with Tool Registry, Policy Engine, and Approval Flow.",
-        "title": "Ops MCP API",
+        "description": "Darwin Ops MCP Backend API with Tool Registry, Policy Engine, and Approval Flow.",
+        "title": "Darwin Ops MCP API",
         "contact": {
             "name": "API Support",
             "url": "http://localhost:8080",
-            "email": "support@ops-mcp.local"
+            "email": "support@darwin-ops-mcp.local"
         },
         "license": {
             "name": "MIT",

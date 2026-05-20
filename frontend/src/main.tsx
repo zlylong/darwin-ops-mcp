@@ -17,7 +17,7 @@ import { AuditPage } from './pages/AuditPage';
 import { ApprovalsPage } from './pages/ApprovalsPage';
 
 type Language = 'en' | 'zh';
-let currentLanguage: Language = (localStorage.getItem('ops-mcp-language') as Language) || 'en';
+let currentLanguage: Language = (localStorage.getItem('darwin-ops-mcp-language') as Language) || 'en';
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { refetchOnWindowFocus: false, retry: 1 } } });
 const APP_VERSION = import.meta.env.VITE_APP_VERSION || '0.1.0';
@@ -36,7 +36,7 @@ function UserMenu() {
   );
 }
 
-function AppVersion() { return <div className="app-version">Ops MCP v{APP_VERSION}</div>; }
+function AppVersion() { return <div className="app-version">Darwin Ops MCP v{APP_VERSION}</div>; }
 
 const menuItems = [
   { key: '/dashboard', icon: <DashboardOutlined />, label: '仪表盘' },
@@ -53,7 +53,7 @@ function AppShell() {
   return (
     <Layout className="app-shell">
       <Layout.Sider className="sidebar" breakpoint="lg" collapsedWidth="0">
-        <div className="brand"><ApiOutlined /><span>Ops MCP</span></div>
+        <div className="brand"><ApiOutlined /><span>Darwin Ops MCP</span></div>
         <Menu theme="dark" mode="inline" selectedKeys={[selected]} items={menuItems} onClick={({ key }) => navigate(key)} />
       </Layout.Sider>
       <Layout>
@@ -83,7 +83,7 @@ function AppShell() {
 
 function App() {
   const [language, setLanguage] = React.useState<Language>(currentLanguage);
-  React.useEffect(() => { localStorage.setItem('ops-mcp-language', language); }, [language]);
+  React.useEffect(() => { localStorage.setItem('darwin-ops-mcp-language', language); }, [language]);
   const locale = language === 'zh' ? zhCN : enUS;
   const theme = { token: { colorPrimary: '#1677ff', borderRadius: 10 } };
   void setLanguage;

@@ -7,10 +7,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/zlylong/ops-mcp/backend/internal/audit"
-	"github.com/zlylong/ops-mcp/backend/internal/domain"
-	"github.com/zlylong/ops-mcp/backend/internal/policy"
-	"github.com/zlylong/ops-mcp/backend/internal/storage"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/audit"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/domain"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/policy"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/storage"
 )
 
 type Handler func(context.Context, map[string]any) (map[string]any, error)

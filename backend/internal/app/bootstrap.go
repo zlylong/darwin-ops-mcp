@@ -3,10 +3,10 @@ package app
 import (
 	"time"
 
-	"github.com/zlylong/ops-mcp/backend/internal/adapters/kubernetes"
-	"github.com/zlylong/ops-mcp/backend/internal/adapters/linux"
-	"github.com/zlylong/ops-mcp/backend/internal/adapters/prometheus"
-	"github.com/zlylong/ops-mcp/backend/internal/domain"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/adapters/kubernetes"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/adapters/linux"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/adapters/prometheus"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/domain"
 )
 
 func RegisterMockTools(r *Registry, k8s *kubernetes.MockAdapter, prom *prometheus.MockAdapter, linuxTools *linux.MockAdapter) error {

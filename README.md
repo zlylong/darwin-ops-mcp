@@ -1,8 +1,8 @@
-# ops-mcp
+# darwin-ops-mcp
 
 > 中文版：[README.zh-CN.md](README.zh-CN.md)
 
-Go-based Ops MCP platform with a React + TypeScript + Vite frontend. The default local experience is **safe mock mode**: it does not connect to a real Kubernetes cluster or Prometheus server, and it seeds sample tools, executions, and audit logs so a non-programmer can try the product immediately.
+Go-based Darwin Ops MCP platform with a React + TypeScript + Vite frontend. The default local experience is **safe mock mode**: it does not connect to a real Kubernetes cluster or Prometheus server, and it seeds sample tools, executions, and audit logs so a non-programmer can try the product immediately.
 
 ## What is included
 
@@ -60,8 +60,8 @@ There is no password login in this MVP. Use the built-in mock identity when exec
 The default Docker stack sets:
 
 ```text
-OPS_MCP_MODE=mock
-OPS_MCP_SEED_MOCK=true
+DARWIN_OPS_MCP_MODE=mock
+DARWIN_OPS_MCP_SEED_MOCK=true
 ```
 
 That means the app starts with sample executions and audit logs already visible.
@@ -160,18 +160,21 @@ Then open:
 Default config is safe mock mode. Use a JSON config file:
 
 ```bash
-OPS_MCP_CONFIG=config.example.json go run ./backend/cmd/server
+DARWIN_OPS_MCP_CONFIG=config.example.json go run ./backend/cmd/server
 # or
 go run ./backend/cmd/server --config config.example.json
 ```
 
 Backend environment variables override config file values:
 
-- `OPS_MCP_ADDR` default `:8080`
-- `OPS_MCP_MODE` default `mock`
-- `OPS_MCP_ENV` default `development`; production write tools require approval
-- `OPS_MCP_SEED_MOCK` default `true`; set to `false` to start without sample executions/audit logs
-- `OPS_MCP_CONFIG` optional JSON config file path
+The legacy `OPS_MCP_*` and `MCP_*` prefixes are still accepted for backward compatibility, but new deployments should use `DARWIN_OPS_MCP_*`.
+
+
+- `DARWIN_OPS_MCP_ADDR` default `:8080`
+- `DARWIN_OPS_MCP_MODE` default `mock`
+- `DARWIN_OPS_MCP_ENV` default `development`; production write tools require approval
+- `DARWIN_OPS_MCP_SEED_MOCK` default `true`; set to `false` to start without sample executions/audit logs
+- `DARWIN_OPS_MCP_CONFIG` optional JSON config file path
 - `DATABASE_URL` PostgreSQL connection string
 
 Frontend environment variables:

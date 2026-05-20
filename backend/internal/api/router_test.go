@@ -12,11 +12,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/zlylong/ops-mcp/backend/internal/app"
-	"github.com/zlylong/ops-mcp/backend/internal/config"
-	"github.com/zlylong/ops-mcp/backend/internal/domain"
-	"github.com/zlylong/ops-mcp/backend/internal/policy"
-	"github.com/zlylong/ops-mcp/backend/internal/storage"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/app"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/config"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/domain"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/policy"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/storage"
 )
 
 type mockRecorder struct{}
@@ -274,7 +274,7 @@ func TestSwaggerUIRoutes(t *testing.T) {
 	docResp := httptest.NewRecorder()
 	r.ServeHTTP(docResp, docReq)
 	assert.Equal(t, http.StatusOK, docResp.Code)
-	assert.Contains(t, docResp.Body.String(), "Ops MCP API")
+	assert.Contains(t, docResp.Body.String(), "Darwin Ops MCP API")
 }
 
 func TestToolCRUDRoutes(t *testing.T) {

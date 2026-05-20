@@ -6,13 +6,13 @@ COPY backend ./backend
 COPY docs ./docs
 RUN go install github.com/swaggo/swag/cmd/swag@v1.16.2
 RUN swag init --generalInfo backend/internal/api/api.go --output docs
-RUN CGO_ENABLED=0 go build -o /out/ops-mcp ./backend/cmd/server
+RUN CGO_ENABLED=0 go build -o /out/darwin-ops-mcp ./backend/cmd/server
 
 FROM debian:13-slim
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl \
     && rm -rf /var/lib/apt/lists/*
-COPY --from=build /out/ops-mcp /usr/local/bin/ops-mcp
-ENV OPS_MCP_ADDR=:8080 OPS_MCP_MODE=mock OPS_MCP_SEED_MOCK=true
+COPY --from=build /out/darwin-ops-mcp /usr/local/bin/darwin-ops-mcp
+ENV DARWIN_OPS_MCP_ADDR=:8080 DARWIN_OPS_MCP_MODE=mock DARWIN_OPS_MCP_SEED_MOCK=true
 EXPOSE 8080
-CMD ["ops-mcp"]
+CMD ["darwin-ops-mcp"]

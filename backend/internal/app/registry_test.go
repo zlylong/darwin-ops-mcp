@@ -8,12 +8,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/zlylong/ops-mcp/backend/internal/adapters/kubernetes"
-	"github.com/zlylong/ops-mcp/backend/internal/adapters/linux"
-	"github.com/zlylong/ops-mcp/backend/internal/adapters/prometheus"
-	"github.com/zlylong/ops-mcp/backend/internal/domain"
-	"github.com/zlylong/ops-mcp/backend/internal/policy"
-	"github.com/zlylong/ops-mcp/backend/internal/storage"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/adapters/kubernetes"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/adapters/linux"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/adapters/prometheus"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/domain"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/policy"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/storage"
 )
 
 type mockRecorder struct{}
@@ -337,7 +337,7 @@ func TestRegisterMockTools_IncludesCommonLinuxTools(t *testing.T) {
 	assert.Equal(t, http.StatusOK, code)
 	assert.Equal(t, "/var", result.Data["path"])
 
-	pending, code, err := registry.Execute(context.Background(), "linux.journal_tail", domain.ExecuteRequest{Actor: "viewer", Role: domain.RoleViewer, Target: "host=demo", Parameters: map[string]any{"unit": "ops-mcp-backend"}})
+	pending, code, err := registry.Execute(context.Background(), "linux.journal_tail", domain.ExecuteRequest{Actor: "viewer", Role: domain.RoleViewer, Target: "host=demo", Parameters: map[string]any{"unit": "darwin-ops-mcp-backend"}})
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusAccepted, code)
 	assert.Equal(t, "pending_approval", pending.Status)

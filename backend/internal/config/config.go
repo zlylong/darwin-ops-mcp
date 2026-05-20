@@ -3,7 +3,7 @@ package config
 import (
 	"os"
 
-	"github.com/zlylong/ops-mcp/backend/internal/domain"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/domain"
 )
 
 type Config struct {
@@ -17,7 +17,7 @@ type Config struct {
 func NewConfig() Config {
 	return Config{
 		Environment:  domain.EnvDevelopment,
-		Mode:         "debug",
+		Mode:         "mock",
 		DatabaseURL:  "",
 		Addr:         ":8080",
 		SeedMockData: true,
@@ -27,22 +27,30 @@ func NewConfig() Config {
 func Load() (Config, error) {
 	cfg := NewConfig()
 
-	if env := os.Getenv("MCP_ENVIRONMENT"); env != "" {
+	if env := firstEnv("DARWIN_OPS_MCP_ENV", "OPS_MCP_ENV", "MCP_ENVIRONMENT"); env != "" {
 		cfg.Environment = domain.Environment(env)
 	}
-	if mode := os.Getenv("MCP_MODE"); mode != "" {
+	if mode := firstEnv("DARWIN_OPS_MCP_MODE", "OPS_MCP_MODE", "MCP_MODE"); mode != "" {
 		cfg.Mode = mode
 	}
-	if dbURL := os.Getenv("MCP_DATABASE_URL"); dbURL != "" {
+	if dbURL := firstEnv("DARWIN_OPS_MCP_DATABASE_URL", "OPS_MCP_DATABASE_URL", "MCP_DATABASE_URL", "DATABASE_URL"); dbURL != "" {
 		cfg.DatabaseURL = dbURL
 	}
-	if addr := os.Getenv("MCP_ADDR"); addr != "" {
+	if addr := firstEnv("DARWIN_OPS_MCP_ADDR", "OPS_MCP_ADDR", "MCP_ADDR"); addr != "" {
 		cfg.Addr = addr
 	}
-	seed := os.Getenv("MCP_SEED_MOCK_DATA")
-	if seed == "true" || seed == "1" {
-		cfg.SeedMockData = true
+	if seed := firstEnv("DARWIN_OPS_MCP_SEED_MOCK", "OPS_MCP_SEED_MOCK", "MCP_SEED_MOCK_DATA"); seed != "" {
+		cfg.SeedMockData = seed == "true" || seed == "1"
 	}
 
 	return cfg, nil
+}
+
+func firstEnv(keys ...string) string {
+	for _, key := range keys {
+		if value := os.Getenv(key); value != "" {
+			return value
+		}
+	}
+	return ""
 }

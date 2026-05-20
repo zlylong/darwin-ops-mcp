@@ -1,10 +1,10 @@
 # Tool Center User Guide (Beginner Edition)
 
-> This guide assumes the reader has never used ops-mcp before. You do not need to know Go, React, Kubernetes, Prometheus, or MCP to follow it.
+> This guide assumes the reader has never used darwin-ops-mcp before. You do not need to know Go, React, Kubernetes, Prometheus, or MCP to follow it.
 
 ## 1. What is the Tool Center?
 
-The Tool Center is the main operations toolbox in ops-mcp.
+The Tool Center is the main operations toolbox in darwin-ops-mcp.
 
 - Each row is an executable tool, such as checking disk usage, memory usage, Kubernetes pods, or Prometheus metrics.
 - Every tool has a description, category, risk level, read-only flag, approval requirement, and input schema.

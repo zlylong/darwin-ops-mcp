@@ -47,7 +47,7 @@
 
 ## Mock mode
 
-`OPS_MCP_MODE=mock` 是默认模式。mock adapter 返回确定性的 Kubernetes 和 Prometheus 数据，不会访问外部基础设施。
+`DARWIN_OPS_MCP_MODE=mock` 是默认模式。mock adapter 返回确定性的 Kubernetes 和 Prometheus 数据，不会访问外部基础设施。
 
 ## PostgreSQL
 

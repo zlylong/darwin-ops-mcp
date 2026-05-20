@@ -1,10 +1,10 @@
-// @title Ops MCP API
+// @title Darwin Ops MCP API
 // @version 1.0
-// @description Ops MCP Backend API with Tool Registry, Policy Engine, and Approval Flow.
+// @description Darwin Ops MCP Backend API with Tool Registry, Policy Engine, and Approval Flow.
 
 // @contact.name API Support
 // @contact.url http://localhost:8080
-// @contact.email support@ops-mcp.local
+// @contact.email support@darwin-ops-mcp.local
 
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT

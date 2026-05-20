@@ -8,7 +8,7 @@ func NewMockAdapter() *MockAdapter { return &MockAdapter{} }
 
 func (a *MockAdapter) SystemInfo(ctx context.Context, params map[string]any) (map[string]any, error) {
 	return map[string]any{
-		"hostname":       "ops-mcp-demo",
+		"hostname":       "darwin-ops-mcp-demo",
 		"kernel":         "Linux 6.12.88+deb13-amd64",
 		"distribution":   "Debian 13",
 		"architecture":   "x86_64",
@@ -35,7 +35,7 @@ func (a *MockAdapter) ProcessList(ctx context.Context, params map[string]any) (m
 	limit := intParam(params, "limit", 10)
 	processes := []map[string]any{
 		{"pid": 1, "user": "root", "cpuPercent": 0.1, "memoryPercent": 0.4, "command": "systemd"},
-		{"pid": 842, "user": "root", "cpuPercent": 1.8, "memoryPercent": 3.2, "command": "ops-mcp"},
+		{"pid": 842, "user": "root", "cpuPercent": 1.8, "memoryPercent": 3.2, "command": "darwin-ops-mcp"},
 		{"pid": 1044, "user": "postgres", "cpuPercent": 0.3, "memoryPercent": 2.1, "command": "postgres"},
 		{"pid": 1288, "user": "root", "cpuPercent": 0.2, "memoryPercent": 1.7, "command": "nginx"},
 	}
@@ -50,14 +50,14 @@ func (a *MockAdapter) NetworkInterfaces(ctx context.Context, params map[string]a
 }
 
 func (a *MockAdapter) ServiceStatus(ctx context.Context, params map[string]any) (map[string]any, error) {
-	service := stringParam(params, "service", "ops-mcp-backend")
+	service := stringParam(params, "service", "darwin-ops-mcp-backend")
 	return map[string]any{"service": service, "active": true, "state": "running", "subState": "running", "since": "2026-05-20T09:05:21Z", "restartCount": 0}, nil
 }
 
 func (a *MockAdapter) JournalTail(ctx context.Context, params map[string]any) (map[string]any, error) {
-	unit := stringParam(params, "unit", "ops-mcp-backend")
+	unit := stringParam(params, "unit", "darwin-ops-mcp-backend")
 	lines := intParam(params, "lines", 50)
-	return map[string]any{"unit": unit, "lines": []string{"May 20 09:05:21 ops-mcp backend starting addr=:8080 mode=mock", "May 20 09:06:01 ops-mcp request completed status=202 path=/api/v1/tools/*/execute", "May 20 09:06:05 ops-mcp health check ok"}, "requestedLines": lines}, nil
+	return map[string]any{"unit": unit, "lines": []string{"May 20 09:05:21 darwin-ops-mcp backend starting addr=:8080 mode=mock", "May 20 09:06:01 darwin-ops-mcp request completed status=202 path=/api/v1/tools/*/execute", "May 20 09:06:05 darwin-ops-mcp health check ok"}, "requestedLines": lines}, nil
 }
 
 func (a *MockAdapter) Ping(ctx context.Context, params map[string]any) (map[string]any, error) {

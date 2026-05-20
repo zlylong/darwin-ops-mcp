@@ -8,7 +8,7 @@ dev:
 	$(MAKE) -j2 backend-dev frontend-dev
 
 backend-dev:
-	OPS_MCP_MODE=mock OPS_MCP_SEED_MOCK=true go run ./backend/cmd/server
+	DARWIN_OPS_MCP_MODE=mock DARWIN_OPS_MCP_SEED_MOCK=true go run ./backend/cmd/server
 
 frontend-dev:
 	cd frontend && npm install && npm run dev
@@ -23,13 +23,13 @@ lint:
 	cd frontend && npm install && npm run lint
 
 build:
-	go build -o bin/ops-mcp ./backend/cmd/server
+	go build -o bin/darwin-ops-mcp ./backend/cmd/server
 	cd frontend && npm install && npm run build
 
 docker-up:
 	docker compose up --build -d
 	@echo ""
-	@echo "ops-mcp is starting. Open the frontend at: http://localhost:5173"
+	@echo "darwin-ops-mcp is starting. Open the frontend at: http://localhost:5173"
 	@echo "Backend health check:              http://localhost:8080/healthz"
 
 docker-down:

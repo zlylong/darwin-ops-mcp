@@ -1,6 +1,6 @@
 package policy
 
-import "github.com/zlylong/ops-mcp/backend/internal/domain"
+import "github.com/zlylong/darwin-ops-mcp/backend/internal/domain"
 
 type Engine struct{}
 

@@ -1,4 +1,4 @@
-module github.com/zlylong/ops-mcp
+module github.com/zlylong/darwin-ops-mcp
 
 go 1.25.0
 

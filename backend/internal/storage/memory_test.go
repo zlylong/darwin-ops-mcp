@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/zlylong/ops-mcp/backend/internal/domain"
 	"github.com/stretchr/testify/assert"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/domain"
 )
 
 func TestExecutionStore_Add(t *testing.T) {
@@ -13,13 +13,13 @@ func TestExecutionStore_Add(t *testing.T) {
 
 	// 测试添加新执行
 	e := domain.Execution{
-		Tool:     "k8s.list_pods",
-		AuditID:  "aud-123",
-		Actor:    "test-user",
-		Role:     domain.RoleViewer,
-		Target:   "local-dev",
-		Status:   "succeeded",
-		Reason:   "test execution",
+		Tool:      "k8s.list_pods",
+		AuditID:   "aud-123",
+		Actor:     "test-user",
+		Role:      domain.RoleViewer,
+		Target:    "local-dev",
+		Status:    "succeeded",
+		Reason:    "test execution",
 		CreatedAt: time.Now().UTC(),
 	}
 	result := store.Add(e)
