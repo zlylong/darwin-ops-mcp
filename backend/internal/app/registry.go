@@ -230,7 +230,7 @@ func (r *Registry) Execute(ctx context.Context, name string, req domain.ExecuteR
 		exe.Status = "error"
 		exe.Reason = err.Error()
 		result.Message = err.Error()
-		r.executions.Add(exe)
+		r.executions.Update(exe.ID, func(e *domain.Execution) { e.Status = "error"; e.Reason = err.Error() })
 		record := domain.AuditRecord{
 			ExecutionID: exe.ID,
 			Actor:       req.Actor,
@@ -244,7 +244,7 @@ func (r *Registry) Execute(ctx context.Context, name string, req domain.ExecuteR
 		return result, 500, err
 	}
 	exe.Result = output
-	r.executions.Add(exe)
+		r.executions.Update(exe.ID, func(e *domain.Execution) { e.Result = output })
 	record := domain.AuditRecord{
 		ExecutionID: exe.ID,
 		Actor:       req.Actor,

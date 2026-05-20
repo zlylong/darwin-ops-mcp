@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"sync"
 	"testing"
 	"time"
 
@@ -106,4 +107,73 @@ func TestApprovalStore_Decide(t *testing.T) {
 	// 测试未找到
 	_, err = store.Decide("nonexistent", domain.ApprovalApproved)
 	assert.Error(t, err)
+}
+
+func TestExecutionStore_Update(t *testing.T) {
+	store := NewExecutionStore()
+	added := store.Add(domain.Execution{Tool: "test", Actor: "user", Role: domain.RoleViewer, Target: "t", Status: "completed", Reason: "test"})
+
+	// Update to error status
+	err := store.Update(added.ID, func(e *domain.Execution) {
+		e.Status = "error"
+		e.Reason = "handler failed"
+	})
+	assert.NoError(t, err)
+
+	updated, ok := store.Get(added.ID)
+	assert.True(t, ok)
+	assert.Equal(t, "error", updated.Status)
+	assert.Equal(t, "handler failed", updated.Reason)
+
+	// Verify only one record exists
+	list := store.List()
+	assert.Len(t, list, 1)
+	assert.Equal(t, "error", list[0].Status)
+
+	// Update non-existent ID
+	err = store.Update("nonexistent", func(ex *domain.Execution) { ex.Status = "updated" })
+	assert.Error(t, err)
+}
+
+func TestApprovalStore_Decide_ReturnsCopy(t *testing.T) {
+	store := NewApprovalStore()
+	added := store.Add(domain.Approval{ExecutionID: "exe-1", Tool: "test", Actor: "user", Target: "t", Status: domain.ApprovalPending, Reason: "test"})
+
+	approved, err := store.Decide(added.ID, domain.ApprovalApproved)
+	assert.NoError(t, err)
+	assert.Equal(t, domain.ApprovalApproved, approved.Status)
+	assert.NotNil(t, approved.DecidedAt)
+
+	// Mutate the returned value - stored data must not be affected
+	// because Decide returns a copy, not the internal pointer.
+	// If Decide returned &s.items[i] (the internal), mutating approved.Status
+	// would change the stored item and List() would see "rejected".
+	approved.Status = domain.ApprovalRejected
+	approved.DecidedAt = nil
+
+	list := store.List()
+	assert.Len(t, list, 1)
+	assert.Equal(t, domain.ApprovalApproved, list[0].Status, "stored item must not be affected by mutating returned value")
+	assert.NotNil(t, list[0].DecidedAt, "stored DecidedAt must not be cleared by mutating returned value")
+}
+
+func TestExecutionStore_Update_Concurrent(t *testing.T) {
+	store := NewExecutionStore()
+	e := store.Add(domain.Execution{Tool: "test", Actor: "user", Role: domain.RoleViewer, Target: "t", Status: "started", Reason: "test"})
+
+	var wg sync.WaitGroup
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			_ = store.Update(e.ID, func(ex *domain.Execution) {
+				ex.Status = "updated"
+			})
+		}()
+	}
+	wg.Wait()
+
+	// Should have exactly one record
+	list := store.List()
+	assert.Len(t, list, 1)
 }

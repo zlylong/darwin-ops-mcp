@@ -47,6 +47,20 @@ func (s *ExecutionStore) Get(id string) (domain.Execution, bool) {
 	return domain.Execution{}, false
 }
 
+// Update applies fn to the execution with the given id.
+// Returns error if the execution is not found.
+func (s *ExecutionStore) Update(id string, fn func(*domain.Execution)) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for i := range s.items {
+		if s.items[i].ID == id {
+			fn(&s.items[i])
+			return nil
+		}
+	}
+	return errors.New("execution not found")
+}
+
 type ApprovalStore struct {
 	mu    sync.RWMutex
 	items []domain.Approval
@@ -80,7 +94,9 @@ func (s *ApprovalStore) Decide(id string, status domain.ApprovalStatus) (domain.
 			now := time.Now().UTC()
 			s.items[i].Status = status
 			s.items[i].DecidedAt = &now
-			return s.items[i], nil
+			// Return a copy to avoid exposing internal mutable reference
+			out := s.items[i]
+			return out, nil
 		}
 	}
 	return domain.Approval{}, errors.New("approval not found")
