@@ -15,6 +15,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=build /out/ops-mcp /usr/local/bin/ops-mcp
+COPY --from=build /src/backend/swagger /root/ops-mcp/backend/swagger
 ENV OPS_MCP_ADDR=:8080 OPS_MCP_MODE=mock OPS_MCP_SEED_MOCK=true
 EXPOSE 8080
 CMD ["ops-mcp"]
