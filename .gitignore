@@ -18,3 +18,7 @@ frontend/tsconfig.tsbuildinfo
 .vscode/
 .idea/
 .DS_Store
+
+# Local agent instructions
+AGENTS.md
+AGENTS.zh-CN.md
