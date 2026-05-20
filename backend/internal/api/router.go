@@ -3,7 +3,6 @@ package api
 import (
 	"log/slog"
 	"net/http"
-	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	"github.com/swaggo/gin-swagger"
@@ -27,10 +26,8 @@ func NewRouter(cfg config.Config, registry *app.Registry, auditor audit.Recorder
 	s := &Server{cfg: cfg, registry: registry, auditor: auditor, logger: logger}
 	r.GET("/healthz", s.health)
 	
-	// Swagger UI - use absolute path for swagger files
-	swaggerPath := filepath.Join("/root/ops-mcp/backend", "swagger")
-	swaggerHandler := ginSwagger.WrapHandler(swaggerFiles.NewHandler(), ginSwagger.URL("/swagger/swagger.json"))
-	r.GET("/swagger/*any", swaggerHandler)
+	// Swagger UI
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.NewHandler(), ginSwagger.URL("/swagger/swagger.json")))
 	
 	v1 := r.Group("/api/v1")
 	v1.GET("/dashboard/summary", s.dashboardSummary)
