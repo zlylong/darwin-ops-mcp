@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/zlylong/ops-mcp/backend/internal/adapters/kubernetes"
+	"github.com/zlylong/ops-mcp/backend/internal/adapters/linux"
 	"github.com/zlylong/ops-mcp/backend/internal/adapters/prometheus"
 	"github.com/zlylong/ops-mcp/backend/internal/api"
 	"github.com/zlylong/ops-mcp/backend/internal/app"
@@ -41,7 +42,7 @@ func main() {
 	executions := storage.NewExecutionStore()
 	approvals := storage.NewApprovalStore()
 	registry := app.NewRegistry(policy.NewEngine(), auditor, executions, approvals, cfg.Environment)
-	if err := app.RegisterMockTools(registry, kubernetes.NewMockAdapter(), prometheus.NewMockAdapter()); err != nil {
+	if err := app.RegisterMockTools(registry, kubernetes.NewMockAdapter(), prometheus.NewMockAdapter(), linux.NewMockAdapter()); err != nil {
 		logger.Error("register tools", "error", err)
 		os.Exit(1)
 	}

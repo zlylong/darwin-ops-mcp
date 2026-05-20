@@ -118,3 +118,19 @@ Marks an approval as approved.
 Marks an approval as rejected.
 
 The MVP approval endpoints update approval state only. They do not automatically replay blocked executions yet.
+
+## Default Linux Tool Catalog
+
+The mock backend now seeds a common Linux operations tool set in the Tools Center. These tools are read-only and execute through the same policy, approval, execution, and audit pipeline as every other MCP tool.
+
+- `linux.system_info`: host, kernel, distribution, architecture, uptime, and virtualization summary.
+- `linux.load_average`: 1/5/15 minute load averages and CPU core count.
+- `linux.memory_usage`: memory and swap capacity, usage, and availability.
+- `linux.disk_usage`: filesystem capacity and usage for a requested `path`.
+- `linux.process_list`: top process list with CPU and memory percentages.
+- `linux.network_interfaces`: network interface state, addresses, and traffic counters.
+- `linux.service_status`: systemd unit active state and restart information for a requested `service`.
+- `linux.journal_tail`: recent journal lines for a requested `unit`; marked medium risk and requires approval.
+- `linux.ping`: connectivity check for a requested `host` and optional `count`.
+- `linux.dns_lookup`: DNS resolution result for a requested `host`.
+

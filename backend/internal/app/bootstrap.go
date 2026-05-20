@@ -4,11 +4,12 @@ import (
 	"time"
 
 	"github.com/zlylong/ops-mcp/backend/internal/adapters/kubernetes"
+	"github.com/zlylong/ops-mcp/backend/internal/adapters/linux"
 	"github.com/zlylong/ops-mcp/backend/internal/adapters/prometheus"
 	"github.com/zlylong/ops-mcp/backend/internal/domain"
 )
 
-func RegisterMockTools(r *Registry, k8s *kubernetes.MockAdapter, prom *prometheus.MockAdapter) error {
+func RegisterMockTools(r *Registry, k8s *kubernetes.MockAdapter, prom *prometheus.MockAdapter, linuxTools *linux.MockAdapter) error {
 	registrations := []struct {
 		tool    domain.Tool
 		handler Handler
@@ -22,6 +23,16 @@ func RegisterMockTools(r *Registry, k8s *kubernetes.MockAdapter, prom *prometheu
 		{domain.Tool{Name: "prometheus.service_latency_p95", Description: "Get service p95 latency", Category: "prometheus", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{"service": "string"}}, prom.ServiceLatencyP95},
 		{domain.Tool{Name: "prometheus.pod_cpu_usage", Description: "Get pod CPU usage", Category: "prometheus", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{"pod": "string"}}, prom.PodCPUUsage},
 		{domain.Tool{Name: "prometheus.pod_memory_usage", Description: "Get pod memory usage", Category: "prometheus", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{"pod": "string"}}, prom.PodMemoryUsage},
+		{domain.Tool{Name: "linux.system_info", Description: "Show Linux host, kernel, distro, uptime and virtualization info", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{}}, linuxTools.SystemInfo},
+		{domain.Tool{Name: "linux.load_average", Description: "Show Linux load average and CPU core count", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{}}, linuxTools.LoadAverage},
+		{domain.Tool{Name: "linux.memory_usage", Description: "Show Linux memory and swap usage", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{}}, linuxTools.MemoryUsage},
+		{domain.Tool{Name: "linux.disk_usage", Description: "Show filesystem disk usage for a path", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{"path": "string?"}}, linuxTools.DiskUsage},
+		{domain.Tool{Name: "linux.process_list", Description: "List top Linux processes by resource usage", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{"limit": "number?"}}, linuxTools.ProcessList},
+		{domain.Tool{Name: "linux.network_interfaces", Description: "Show Linux network interface addresses and traffic counters", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{}}, linuxTools.NetworkInterfaces},
+		{domain.Tool{Name: "linux.service_status", Description: "Check systemd service status", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{"service": "string"}}, linuxTools.ServiceStatus},
+		{domain.Tool{Name: "linux.journal_tail", Description: "Tail recent journal logs for a systemd unit", Category: "linux", ReadOnly: true, Risk: domain.RiskMedium, RequiresApproval: true, InputSchema: map[string]string{"unit": "string", "lines": "number?"}}, linuxTools.JournalTail},
+		{domain.Tool{Name: "linux.ping", Description: "Run a ping connectivity check", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{"host": "string", "count": "number?"}}, linuxTools.Ping},
+		{domain.Tool{Name: "linux.dns_lookup", Description: "Resolve DNS records for a hostname", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{"host": "string"}}, linuxTools.DNSLookup},
 	}
 	for _, reg := range registrations {
 		if err := r.Register(reg.tool, reg.handler); err != nil {

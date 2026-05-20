@@ -118,3 +118,19 @@ Base URL：`/api/v1`
 将审批标记为 rejected。
 
 MVP 的审批接口目前只更新审批状态，尚不会自动重放被阻止的执行。
+
+## 默认 Linux 工具目录
+
+Mock 后端现在会在工具中心默认生成一组常用 Linux 运维工具。这些工具均为只读工具，并且与其他 MCP 工具一样统一经过策略、审批、执行和审计链路。
+
+- `linux.system_info`：查看主机名、内核、发行版、架构、运行时长和虚拟化信息。
+- `linux.load_average`：查看 1/5/15 分钟负载均值与 CPU 核心数。
+- `linux.memory_usage`：查看内存与 swap 容量、使用量和可用量。
+- `linux.disk_usage`：按指定 `path` 查看文件系统容量与使用率。
+- `linux.process_list`：查看按资源使用展示的进程列表。
+- `linux.network_interfaces`：查看网卡状态、地址与流量计数。
+- `linux.service_status`：按指定 `service` 查看 systemd 服务状态与重启信息。
+- `linux.journal_tail`：按指定 `unit` 查看最近 journal 日志；该工具为中风险并需要审批。
+- `linux.ping`：按指定 `host` 和可选 `count` 执行连通性检查。
+- `linux.dns_lookup`：按指定 `host` 查看 DNS 解析结果。
+

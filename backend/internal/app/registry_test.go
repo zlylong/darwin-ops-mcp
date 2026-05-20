@@ -8,6 +8,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/zlylong/ops-mcp/backend/internal/adapters/kubernetes"
+	"github.com/zlylong/ops-mcp/backend/internal/adapters/linux"
+	"github.com/zlylong/ops-mcp/backend/internal/adapters/prometheus"
 	"github.com/zlylong/ops-mcp/backend/internal/domain"
 	"github.com/zlylong/ops-mcp/backend/internal/policy"
 	"github.com/zlylong/ops-mcp/backend/internal/storage"
@@ -303,4 +306,40 @@ func TestRegistry_Execute_HighRiskRequiresApproval(t *testing.T) {
 	assert.Equal(t, http.StatusAccepted, code)
 	assert.Equal(t, "pending_approval", result.Status)
 	assert.NotEmpty(t, result.ApprovalID)
+}
+
+func TestRegisterMockTools_IncludesCommonLinuxTools(t *testing.T) {
+	registry := NewRegistry(policy.NewEngine(), &mockRecorder{}, storage.NewExecutionStore(), storage.NewApprovalStore(), domain.EnvDevelopment)
+	err := RegisterMockTools(registry, kubernetes.NewMockAdapter(), prometheus.NewMockAdapter(), linux.NewMockAdapter())
+	assert.NoError(t, err)
+
+	linuxToolNames := []string{
+		"linux.system_info",
+		"linux.load_average",
+		"linux.memory_usage",
+		"linux.disk_usage",
+		"linux.process_list",
+		"linux.network_interfaces",
+		"linux.service_status",
+		"linux.journal_tail",
+		"linux.ping",
+		"linux.dns_lookup",
+	}
+	for _, name := range linuxToolNames {
+		tool, ok := registry.Get(name)
+		assert.True(t, ok, name)
+		assert.Equal(t, "linux", tool.Category)
+		assert.True(t, tool.ReadOnly)
+	}
+
+	result, code, err := registry.Execute(context.Background(), "linux.disk_usage", domain.ExecuteRequest{Actor: "viewer", Role: domain.RoleViewer, Target: "host=demo", Parameters: map[string]any{"path": "/var"}})
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusOK, code)
+	assert.Equal(t, "/var", result.Data["path"])
+
+	pending, code, err := registry.Execute(context.Background(), "linux.journal_tail", domain.ExecuteRequest{Actor: "viewer", Role: domain.RoleViewer, Target: "host=demo", Parameters: map[string]any{"unit": "ops-mcp-backend"}})
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusAccepted, code)
+	assert.Equal(t, "pending_approval", pending.Status)
+	assert.NotEmpty(t, pending.ApprovalID)
 }
