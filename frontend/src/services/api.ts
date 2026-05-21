@@ -1,4 +1,4 @@
-import type { AuditEvent, Approval, Execution, ExecuteResult, ExecuteRequest, Tool, ToolRequest, Summary } from '../types';
+import type { Application, ApplicationRequest, AuditEvent, Approval, Execution, ExecuteResult, ExecuteRequest, Tool, ToolRequest, Summary } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? '';
 const MOCK_API = import.meta.env.VITE_MOCK_API === 'true';
@@ -21,6 +21,7 @@ async function requestJSON<T>(path: string, init?: RequestInit): Promise<T> {
 const mockExecutions: Execution[] = [];
 const mockAudit: AuditEvent[] = [];
 const mockApprovals: Approval[] = [];
+const mockApplications: Application[] = [];
 const mockTools: Tool[] = [
   { name: 'k8s.list_pods', description: 'List Kubernetes pods in a namespace.', category: 'kubernetes', readOnly: true, risk: 'low', requiresApproval: false, inputSchema: { namespace: 'string?' } },
   { name: 'k8s.get_pod_logs', description: 'Fetch pod logs.', category: 'kubernetes', readOnly: true, risk: 'medium', requiresApproval: false, inputSchema: { pod: 'string', namespace: 'string?' } },
@@ -89,6 +90,36 @@ async function mockRequest<T>(path: string, init?: RequestInit): Promise<T> {
     approval.decidedAt = new Date().toISOString();
     return approval as T;
   }
+  if (path === '/api/v1/applications' && (!init?.method || init.method === 'GET')) return mockApplications as T;
+  if (path === '/api/v1/applications' && init?.method === 'POST') {
+    const app = JSON.parse(String(init.body ?? '{}')) as ApplicationRequest;
+    if (!app.tool) throw new ApiError(400, { error: 'tool is required' });
+    if (!app.reason) throw new ApiError(400, { error: 'reason is required' });
+    if (!['low', 'medium', 'high', 'critical'].includes(app.risk)) throw new ApiError(400, { error: 'invalid risk level' });
+    const now = new Date().toISOString();
+    const newApp: Application = {
+      id: `mock-app-${Date.now()}`,
+      tool: app.tool,
+      risk: app.risk,
+      role: app.role,
+      actor: 'anonymous',
+      status: app.risk === 'low' || app.risk === 'medium' ? 'auto_approved' : 'pending',
+      reason: app.reason,
+      durationHrs: app.durationHrs ?? 24,
+      createdAt: now,
+      decision: app.risk === 'low' || app.risk === 'medium' ? 'auto-approved (low/medium risk)' : 'pending review (high/critical risk)',
+    };
+    mockApplications.unshift(newApp);
+    return newApp as T;
+  }
+  if (path.startsWith('/api/v1/applications/') && (path.endsWith('/approve') || path.endsWith('/reject'))) {
+    const id = decodeURIComponent(path.split('/')[4] ?? '');
+    const app = mockApplications.find((item) => item.id === id);
+    if (!app) throw new ApiError(404, { error: 'application not found' });
+    app.status = path.endsWith('/approve') ? 'approved' : 'rejected';
+    app.decidedAt = new Date().toISOString();
+    return app as T;
+  }
   if (path === '/healthz') return { status: 'ok', mode: 'mock', environment: 'development' } as T;
   throw new ApiError(404, { error: 'mock route not found' });
 }
@@ -113,4 +144,8 @@ export const api = {
   approvals: () => requestJSON<Approval[]>('/api/v1/approvals'),
   approve: (id: string) => requestJSON<Approval>(`/api/v1/approvals/${encodeURIComponent(id)}/approve`, { method: 'POST' }),
   reject: (id: string) => requestJSON<Approval>(`/api/v1/approvals/${encodeURIComponent(id)}/reject`, { method: 'POST' }),
+  applications: () => requestJSON<Application[]>('/api/v1/applications'),
+  createApplication: (req: ApplicationRequest) => requestJSON<Application>('/api/v1/applications', { method: 'POST', body: JSON.stringify(req) }),
+  approveApplication: (id: string) => requestJSON<Application>(`/api/v1/applications/${encodeURIComponent(id)}/approve`, { method: 'POST' }),
+  rejectApplication: (id: string) => requestJSON<Application>(`/api/v1/applications/${encodeURIComponent(id)}/reject`, { method: 'POST' }),
 };

@@ -143,8 +143,8 @@ func (s *Server) executeTool(c *gin.Context) {
 // @Tags applications
 // @Accept json
 // @Produce json
-// @Param request body domain.ToolApplicationRequest true "Tool application request"
-// @Success 201 {object} domain.ToolApplication
+// @Param request body map[string]any true "Tool application request"
+// @Success 201 {object} map[string]any
 // @Failure 400 {object} map[string]string
 // @Router /applications [post]
 func (s *Server) submitApplication(c *gin.Context) {
@@ -186,7 +186,7 @@ func (s *Server) submitApplication(c *gin.Context) {
 // @Description Returns all tool access applications in creation order (newest last).
 // @Tags applications
 // @Produce json
-// @Success 200 {array} domain.ToolApplication
+// @Success 200 {array} map[string]any
 // @Router /applications [get]
 func (s *Server) listApplications(c *gin.Context) {
 	c.JSON(http.StatusOK, s.registry.Applications())
