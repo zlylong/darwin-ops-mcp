@@ -24,7 +24,7 @@ import (
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
 	cfg := config.Load()
-	if cfg.DatabaseURL != "" && cfg.Mode != "mock" {
+	if cfg.DatabaseURL != "" && cfg.Mode == "postgres" {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		db, err := storage.OpenPostgres(ctx, cfg.DatabaseURL)
