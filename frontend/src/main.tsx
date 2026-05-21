@@ -15,6 +15,7 @@ import { ToolsPage } from './pages/ToolsPage';
 import { ExecutionsPage } from './pages/ExecutionsPage';
 import { AuditPage } from './pages/AuditPage';
 import { ApprovalsPage } from './pages/ApprovalsPage';
+import { ToolApplicationsPage } from './pages/ToolApplicationsPage';
 
 type Language = 'en' | 'zh';
 let currentLanguage: Language = (localStorage.getItem('darwin-ops-mcp-language') as Language) || 'en';
@@ -43,7 +44,8 @@ const menuItems = [
   { key: '/tools', icon: <ToolOutlined />, label: '工具中心' },
   { key: '/executions', icon: <FileSearchOutlined />, label: '执行中心' },
   { key: '/audit', icon: <AuditOutlined />, label: '审计中心' },
-  { key: '/approvals', icon: <CheckCircleOutlined />, label: '审批中心' },
+  { key: '/approvals', icon: <CheckCircleOutlined />, label: '任务审批中心' },
+  { key: '/tool-applications', icon: <ToolOutlined />, label: '工具审批中心' },
 ];
 
 function AppShell() {
@@ -72,6 +74,7 @@ function AppShell() {
             <Route path="/executions" element={<ExecutionsPage />} />
             <Route path="/audit" element={<AuditPage />} />
             <Route path="/approvals" element={<ApprovalsPage />} />
+            <Route path="/tool-applications" element={<ToolApplicationsPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Layout.Content>

@@ -5,6 +5,8 @@ import { api } from '../services/api';
 import type { Application } from '../types';
 import { StatusTag, formatTime, shortId } from '../components/utils';
 
+export const TOOL_APPLICATIONS_PAGE_KEY = 'tool-applications';
+export const TOOL_APPLICATIONS_PAGE_TITLE = '工具审批中心';
 export function ToolApplicationsPage() {
   const applications = useQuery({ queryKey: ['applications'], queryFn: api.applications, refetchInterval: 5000 });
   const [status, setStatus] = React.useState('pending');
@@ -44,7 +46,7 @@ export function ToolApplicationsPage() {
     <div className="page">
       <div className="page-title">
         <div>
-          <Typography.Title level={2}>工具审批中心</Typography.Title>
+          <Typography.Title level={2}>{TOOL_APPLICATIONS_PAGE_TITLE}</Typography.Title>
           <Typography.Text type="secondary">管理工具申请请求，批准或拒绝工具使用权限。</Typography.Text>
         </div>
       </div>
