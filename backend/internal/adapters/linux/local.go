@@ -39,7 +39,7 @@ func firstExistingDir(paths ...string) string {
 func (a *LocalAdapter) SystemInfo(ctx context.Context, params map[string]any) (map[string]any, error) {
 	uptime, _ := a.readUptime()
 	bootTime := a.now().Add(-time.Duration(uptime) * time.Second).UTC().Format(time.RFC3339)
-	return map[string]any{"hostname": strings.TrimSpace(a.readFirst("sys/kernel/hostname")), "kernel": strings.TrimSpace(a.readFirst("sys/kernel/osrelease")), "distribution": a.distribution(), "architecture": runtime.GOARCH, "uptimeSeconds": uptime, "bootTime": bootTime, "virtualization": a.virtualization(), "source": "local"}, nil
+	return map[string]any{"hostname": a.hostname(), "kernel": strings.TrimSpace(a.readFirst("sys/kernel/osrelease")), "distribution": a.distribution(), "architecture": runtime.GOARCH, "uptimeSeconds": uptime, "bootTime": bootTime, "virtualization": a.virtualization(), "source": "local"}, nil
 }
 
 func (a *LocalAdapter) LoadAverage(ctx context.Context, params map[string]any) (map[string]any, error) {
