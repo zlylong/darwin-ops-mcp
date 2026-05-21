@@ -146,8 +146,6 @@ func TestApprovalStore_Decide_ReturnsCopy(t *testing.T) {
 
 	// Mutate the returned value - stored data must not be affected
 	// because Decide returns a copy, not the internal pointer.
-	// If Decide returned &s.items[i] (the internal), mutating approved.Status
-	// would change the stored item and List() would see "rejected".
 	approved.Status = domain.ApprovalRejected
 	approved.DecidedAt = nil
 
@@ -173,7 +171,129 @@ func TestExecutionStore_Update_Concurrent(t *testing.T) {
 	}
 	wg.Wait()
 
-	// Should have exactly one record
+	// Should have exactly one record (no duplication) and final status set
+	list := store.List()
+	assert.Len(t, list, 1)
+	assert.Equal(t, "updated", list[0].Status)
+}
+
+func TestExecutionStore_Add_Concurrent(t *testing.T) {
+	t.Parallel()
+	store := NewExecutionStore()
+	var wg sync.WaitGroup
+	for i := 0; i < 50; i++ {
+		wg.Add(1)
+		go func(idx int) {
+			defer wg.Done()
+			e := domain.Execution{
+				Tool:      "tool",
+				AuditID:   "aud",
+				Actor:     "user",
+				Role:      domain.RoleViewer,
+				Target:    "t",
+				Status:    "succeeded",
+				Reason:    "test",
+				CreatedAt: time.Now().UTC(),
+			}
+			result := store.Add(e)
+			assert.NotEmpty(t, result.ID)
+		}(i)
+	}
+	wg.Wait()
+	list := store.List()
+	assert.Len(t, list, 50)
+}
+
+func TestExecutionStore_Update_ConcurrentStress(t *testing.T) {
+	t.Parallel()
+	store := NewExecutionStore()
+	e := store.Add(domain.Execution{Tool: "test", Actor: "user", Role: domain.RoleViewer, Target: "t", Status: "started", Reason: "test"})
+
+	var wg sync.WaitGroup
+	for i := 0; i < 20; i++ {
+		wg.Add(1)
+		go func(idx int) {
+			defer wg.Done()
+			_ = store.Update(e.ID, func(ex *domain.Execution) {
+				ex.Status = "done"
+			})
+		}(i)
+	}
+	wg.Wait()
+
+	list := store.List()
+	assert.Len(t, list, 1)
+	assert.Equal(t, "done", list[0].Status)
+}
+
+func TestApprovalStore_Add_Concurrent(t *testing.T) {
+	t.Parallel()
+	store := NewApprovalStore()
+	var wg sync.WaitGroup
+	for i := 0; i < 50; i++ {
+		wg.Add(1)
+		go func(idx int) {
+			defer wg.Done()
+			a := domain.Approval{
+				ExecutionID: "exe-1",
+				Tool:        "test",
+				Actor:       "user",
+				Target:      "t",
+				Status:      domain.ApprovalPending,
+				Reason:      "test",
+				CreatedAt:   time.Now().UTC(),
+			}
+			result := store.Add(a)
+			assert.NotEmpty(t, result.ID)
+		}(i)
+	}
+	wg.Wait()
+	list := store.List()
+	assert.Len(t, list, 50)
+}
+
+func TestApprovalStore_Decide_Concurrent(t *testing.T) {
+	t.Parallel()
+	store := NewApprovalStore()
+	added := store.Add(domain.Approval{ExecutionID: "exe-1", Tool: "test", Actor: "user", Target: "t", Status: domain.ApprovalPending, Reason: "test"})
+
+	var wg sync.WaitGroup
+	for i := 0; i < 20; i++ {
+		wg.Add(1)
+		go func(idx int) {
+			defer wg.Done()
+			approved, err := store.Decide(added.ID, domain.ApprovalApproved)
+			assert.NoError(t, err)
+			assert.Equal(t, domain.ApprovalApproved, approved.Status)
+		}(i)
+	}
+	wg.Wait()
+
+	list := store.List()
+	assert.Len(t, list, 1)
+}
+
+func TestExecutionStore_MixedReadWrite_Concurrent(t *testing.T) {
+	t.Parallel()
+	store := NewExecutionStore()
+	added := store.Add(domain.Execution{Tool: "test", Actor: "user", Role: domain.RoleViewer, Target: "t", Status: "started", Reason: "test"})
+
+	var wg sync.WaitGroup
+	for i := 0; i < 30; i++ {
+		wg.Add(1)
+		go func(idx int) {
+			defer wg.Done()
+			if idx%3 == 0 {
+				// Write
+				_ = store.Update(added.ID, func(ex *domain.Execution) { ex.Status = "updated" })
+			} else {
+				// Read
+				_, ok := store.Get(added.ID)
+				assert.True(t, ok)
+			}
+		}(i)
+	}
+	wg.Wait()
 	list := store.List()
 	assert.Len(t, list, 1)
 }

@@ -10,30 +10,32 @@ import (
 	"github.com/zlylong/darwin-ops-mcp/backend/internal/domain"
 )
 
+// RegisterMockTools registers all mock adapter tools (k8s, prometheus, linux)
+// into the registry. It returns an error if a tool is already registered.
 func RegisterMockTools(r *Registry, k8s *kubernetes.MockAdapter, prom *prometheus.MockAdapter, linuxTools *linux.MockAdapter) error {
 	registrations := []struct {
 		tool    domain.Tool
 		handler Handler
 	}{
-		{domain.Tool{Name: "k8s.list_pods", Description: "List Kubernetes pods", Category: "kubernetes", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{"namespace": "string?"}}, k8s.ListPods},
-		{domain.Tool{Name: "k8s.get_pod_logs", Description: "Fetch pod logs", Category: "kubernetes", ReadOnly: true, Risk: domain.RiskMedium, InputSchema: map[string]string{"namespace": "string?", "pod": "string"}}, k8s.GetPodLogs},
-		{domain.Tool{Name: "k8s.list_events", Description: "List Kubernetes events", Category: "kubernetes", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{"namespace": "string?"}}, k8s.ListEvents},
-		{domain.Tool{Name: "k8s.get_deployment_status", Description: "Get deployment rollout status", Category: "kubernetes", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{"namespace": "string?", "deployment": "string"}}, k8s.GetDeploymentStatus},
-		{domain.Tool{Name: "prometheus.query", Description: "Run a read-only Prometheus query", Category: "prometheus", ReadOnly: true, Risk: domain.RiskMedium, InputSchema: map[string]string{"query": "string"}}, prom.Query},
-		{domain.Tool{Name: "prometheus.service_error_rate", Description: "Get service error rate", Category: "prometheus", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{"service": "string"}}, prom.ServiceErrorRate},
-		{domain.Tool{Name: "prometheus.service_latency_p95", Description: "Get service p95 latency", Category: "prometheus", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{"service": "string"}}, prom.ServiceLatencyP95},
-		{domain.Tool{Name: "prometheus.pod_cpu_usage", Description: "Get pod CPU usage", Category: "prometheus", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{"pod": "string"}}, prom.PodCPUUsage},
-		{domain.Tool{Name: "prometheus.pod_memory_usage", Description: "Get pod memory usage", Category: "prometheus", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{"pod": "string"}}, prom.PodMemoryUsage},
-		{domain.Tool{Name: "linux.system_info", Description: "Show Linux host, kernel, distro, uptime and virtualization info", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{}}, linuxTools.SystemInfo},
-		{domain.Tool{Name: "linux.load_average", Description: "Show Linux load average and CPU core count", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{}}, linuxTools.LoadAverage},
-		{domain.Tool{Name: "linux.memory_usage", Description: "Show Linux memory and swap usage", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{}}, linuxTools.MemoryUsage},
-		{domain.Tool{Name: "linux.disk_usage", Description: "Show filesystem disk usage for a path", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{"path": "string?"}}, linuxTools.DiskUsage},
-		{domain.Tool{Name: "linux.process_list", Description: "List top Linux processes by resource usage", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{"limit": "number?"}}, linuxTools.ProcessList},
-		{domain.Tool{Name: "linux.network_interfaces", Description: "Show Linux network interface addresses and traffic counters", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{}}, linuxTools.NetworkInterfaces},
-		{domain.Tool{Name: "linux.service_status", Description: "Check systemd service status", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{"service": "string"}}, linuxTools.ServiceStatus},
-		{domain.Tool{Name: "linux.journal_tail", Description: "Tail recent journal logs for a systemd unit", Category: "linux", ReadOnly: true, Risk: domain.RiskMedium, RequiresApproval: true, InputSchema: map[string]string{"unit": "string", "lines": "number?"}}, linuxTools.JournalTail},
-		{domain.Tool{Name: "linux.ping", Description: "Run a ping connectivity check", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{"host": "string", "count": "number?"}}, linuxTools.Ping},
-		{domain.Tool{Name: "linux.dns_lookup", Description: "Resolve DNS records for a hostname", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]string{"host": "string"}}, linuxTools.DNSLookup},
+		{domain.Tool{Name: "k8s.list_pods", Description: "List Kubernetes pods", Category: "kubernetes", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]domain.ParamSchema{"namespace": {Type: "string", Required: false, Description: "Kubernetes namespace"}}}, k8s.ListPods},
+		{domain.Tool{Name: "k8s.get_pod_logs", Description: "Fetch pod logs", Category: "kubernetes", ReadOnly: true, Risk: domain.RiskMedium, InputSchema: map[string]domain.ParamSchema{"namespace": {Type: "string", Required: false}, "pod": {Type: "string", Required: true}}}, k8s.GetPodLogs},
+		{domain.Tool{Name: "k8s.list_events", Description: "List Kubernetes events", Category: "kubernetes", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]domain.ParamSchema{"namespace": {Type: "string", Required: false}}}, k8s.ListEvents},
+		{domain.Tool{Name: "k8s.get_deployment_status", Description: "Get deployment rollout status", Category: "kubernetes", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]domain.ParamSchema{"namespace": {Type: "string", Required: false}, "deployment": {Type: "string", Required: true}}}, k8s.GetDeploymentStatus},
+		{domain.Tool{Name: "prometheus.query", Description: "Run a read-only Prometheus query", Category: "prometheus", ReadOnly: true, Risk: domain.RiskMedium, InputSchema: map[string]domain.ParamSchema{"query": {Type: "string", Required: true}}}, prom.Query},
+		{domain.Tool{Name: "prometheus.service_error_rate", Description: "Get service error rate", Category: "prometheus", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]domain.ParamSchema{"service": {Type: "string", Required: false}}}, prom.ServiceErrorRate},
+		{domain.Tool{Name: "prometheus.service_latency_p95", Description: "Get service p95 latency", Category: "prometheus", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]domain.ParamSchema{"service": {Type: "string", Required: false}}}, prom.ServiceLatencyP95},
+		{domain.Tool{Name: "prometheus.pod_cpu_usage", Description: "Get pod CPU usage", Category: "prometheus", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]domain.ParamSchema{"pod": {Type: "string", Required: false}}}, prom.PodCPUUsage},
+		{domain.Tool{Name: "prometheus.pod_memory_usage", Description: "Get pod memory usage", Category: "prometheus", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]domain.ParamSchema{"pod": {Type: "string", Required: false}}}, prom.PodMemoryUsage},
+		{domain.Tool{Name: "linux.system_info", Description: "Show Linux host, kernel, distro, uptime and virtualization info", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]domain.ParamSchema{}}, linuxTools.SystemInfo},
+		{domain.Tool{Name: "linux.load_average", Description: "Show Linux load average and CPU core count", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]domain.ParamSchema{}}, linuxTools.LoadAverage},
+		{domain.Tool{Name: "linux.memory_usage", Description: "Show Linux memory and swap usage", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]domain.ParamSchema{}}, linuxTools.MemoryUsage},
+		{domain.Tool{Name: "linux.disk_usage", Description: "Show filesystem disk usage for a path", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]domain.ParamSchema{"path": {Type: "string", Required: false}}}, linuxTools.DiskUsage},
+		{domain.Tool{Name: "linux.process_list", Description: "List top Linux processes by resource usage", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]domain.ParamSchema{"limit": {Type: "number", Required: false}}}, linuxTools.ProcessList},
+		{domain.Tool{Name: "linux.network_interfaces", Description: "Show Linux network interface addresses and traffic counters", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]domain.ParamSchema{}}, linuxTools.NetworkInterfaces},
+		{domain.Tool{Name: "linux.service_status", Description: "Check systemd service status", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]domain.ParamSchema{"service": {Type: "string", Required: false}}}, linuxTools.ServiceStatus},
+		{domain.Tool{Name: "linux.journal_tail", Description: "Tail recent journal logs for a systemd unit", Category: "linux", ReadOnly: true, Risk: domain.RiskMedium, RequiresApproval: true, InputSchema: map[string]domain.ParamSchema{"unit": {Type: "string", Required: true}, "lines": {Type: "number", Required: false}}}, linuxTools.JournalTail},
+		{domain.Tool{Name: "linux.ping", Description: "Run a ping connectivity check", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]domain.ParamSchema{"host": {Type: "string", Required: true}, "count": {Type: "number", Required: false}}}, linuxTools.Ping},
+		{domain.Tool{Name: "linux.dns_lookup", Description: "Resolve DNS records for a hostname", Category: "linux", ReadOnly: true, Risk: domain.RiskLow, InputSchema: map[string]domain.ParamSchema{"host": {Type: "string", Required: true}}}, linuxTools.DNSLookup},
 	}
 	for _, reg := range registrations {
 		if err := r.Register(reg.tool, reg.handler); err != nil {
@@ -43,13 +45,14 @@ func RegisterMockTools(r *Registry, k8s *kubernetes.MockAdapter, prom *prometheu
 	return nil
 }
 
-// seedID is the fixed ID used for seeded executions and audit records.
-// Using a fixed ID makes SeedMockData idempotent: re-calling it will
-// find the existing records and skip insertion rather than duplicating.
+// seedIDPrefix is the fixed ID prefix used for seeded executions and audit records.
+// Using a fixed ID makes SeedMockData idempotent: re-calling it will find the
+// existing records and skip insertion rather than duplicating.
 const seedIDPrefix = "seed-"
 
+// SeedMockData populates the execution and audit stores with representative demo records.
+// It is idempotent: if any seeded execution already exists, it returns immediately.
 func (r *Registry) SeedMockData() {
-	// Idempotency: skip if any seeded execution already exists.
 	for _, exe := range r.executions.List() {
 		if strings.HasPrefix(exe.ID, seedIDPrefix) {
 			return

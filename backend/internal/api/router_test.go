@@ -284,7 +284,7 @@ func TestToolCRUDRoutes(t *testing.T) {
 	logger := slog.Default()
 	r := NewRouter(cfg, registry, auditor, logger)
 
-	createBody := map[string]any{"name": "custom.echo", "description": "Echo params", "category": "custom", "readOnly": true, "risk": "low", "requiresApproval": false, "inputSchema": map[string]string{"message": "string"}}
+	createBody := map[string]any{"name": "custom.echo", "description": "Echo params", "category": "custom", "readOnly": true, "risk": "low", "requiresApproval": false, "inputSchema": map[string]domain.ParamSchema{"message": {Type: "string", Required: false}}}
 	body, _ := json.Marshal(createBody)
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/tools", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
@@ -293,7 +293,7 @@ func TestToolCRUDRoutes(t *testing.T) {
 	assert.Equal(t, http.StatusCreated, w.Code)
 	assert.Contains(t, w.Body.String(), "custom.echo")
 
-	updateBody := map[string]any{"name": "custom.echo", "description": "Updated", "category": "custom", "readOnly": true, "risk": "medium", "requiresApproval": true, "inputSchema": map[string]string{"message": "string"}}
+	updateBody := map[string]any{"name": "custom.echo", "description": "Updated", "category": "custom", "readOnly": true, "risk": "medium", "requiresApproval": true, "inputSchema": map[string]domain.ParamSchema{"message": {Type: "string", Required: false}}}
 	body, _ = json.Marshal(updateBody)
 	req = httptest.NewRequest(http.MethodPut, "/api/v1/tools/custom.echo", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
@@ -347,7 +347,7 @@ func TestExecuteTool_RequiresApprovalFlagCreatesApproval(t *testing.T) {
 	logger := slog.Default()
 	r := NewRouter(cfg, registry, auditor, logger)
 
-	createBody := map[string]any{"name": "approval.flag", "description": "Approval flag", "category": "custom", "readOnly": true, "risk": "low", "requiresApproval": true, "inputSchema": map[string]string{"message": "string"}}
+	createBody := map[string]any{"name": "approval.flag", "description": "Approval flag", "category": "custom", "readOnly": true, "risk": "low", "requiresApproval": true, "inputSchema": map[string]domain.ParamSchema{"message": {Type: "string", Required: false}}}
 	body, _ := json.Marshal(createBody)
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/tools", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")

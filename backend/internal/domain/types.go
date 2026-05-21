@@ -1,6 +1,50 @@
 package domain
 
-import "time"
+import (
+	"errors"
+	"time"
+)
+
+// ParamSchema describes a single input parameter for a tool.
+type ParamSchema struct {
+	Type        string `json:"type"`           // "string" | "number" | "boolean"
+	Required    bool   `json:"required"`       // true = mandatory, false = optional
+	Description string `json:"description"`    // human-readable description
+	Default     any    `json:"default,omitempty"` // optional default value
+}
+
+// Validate checks whether params[key] satisfies this schema.
+// It returns an error if a required key is missing, or if the value type does not match.
+func (p ParamSchema) Validate(key string, params map[string]any) error {
+	val, ok := params[key]
+	if !ok {
+		if p.Required {
+			return errors.New("missing required parameter: " + key)
+		}
+		return nil
+	}
+	if val == nil {
+		return errors.New("parameter " + key + " must not be null")
+	}
+	switch p.Type {
+	case "string":
+		if _, ok := val.(string); !ok {
+			return errors.New("parameter " + key + " must be a string")
+		}
+	case "number":
+		switch v := val.(type) {
+		case float64, int, int32, int64:
+			_ = v // use variable to avoid unused warning
+		default:
+			return errors.New("parameter " + key + " must be a number")
+		}
+	case "boolean":
+		if _, ok := val.(bool); !ok {
+			return errors.New("parameter " + key + " must be a boolean")
+		}
+	}
+	return nil
+}
 
 type RiskLevel string
 
@@ -28,13 +72,23 @@ const (
 )
 
 type Tool struct {
-	Name             string            `json:"name"`
-	Description      string            `json:"description"`
-	Category         string            `json:"category"`
-	ReadOnly         bool              `json:"readOnly"`
-	Risk             RiskLevel         `json:"risk"`
-	RequiresApproval bool              `json:"requiresApproval"`
-	InputSchema      map[string]string `json:"inputSchema"`
+	Name             string                 `json:"name"`
+	Description      string                 `json:"description"`
+	Category         string                 `json:"category"`
+	ReadOnly         bool                   `json:"readOnly"`
+	Risk             RiskLevel              `json:"risk"`
+	RequiresApproval bool                   `json:"requiresApproval"`
+	InputSchema      map[string]ParamSchema `json:"inputSchema"`
+}
+
+// ValidateParams checks that all required parameters are present and their types match.
+func (t Tool) ValidateParams(params map[string]any) error {
+	for name, schema := range t.InputSchema {
+		if err := schema.Validate(name, params); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 type ExecuteRequest struct {
