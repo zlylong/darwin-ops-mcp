@@ -17,8 +17,7 @@ RUN set -eux; \
     curl -fsSL --retry 5 --retry-delay 2 --connect-timeout 10 \
         -o /usr/local/bin/darwin-ops-mcp \
         "${BACKEND_BINARY_URL}"; \
-    chmod +x /usr/local/bin/darwin-ops-mcp; \
-    /usr/local/bin/darwin-ops-mcp --help >/dev/null 2>&1 || true
+    chmod +x /usr/local/bin/darwin-ops-mcp
 
 ENV DARWIN_OPS_MCP_ADDR=:8080 DARWIN_OPS_MCP_MODE=mock DARWIN_OPS_MCP_SEED_MOCK=true
 EXPOSE 8080
