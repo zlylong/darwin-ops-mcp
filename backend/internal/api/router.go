@@ -59,6 +59,8 @@ func NewRouter(cfg config.Config, registry *app.Registry, auditor audit.Recorder
 	v1.GET("/audit", s.auditRecords)
 	v1.GET("/applications", s.listApplications)
 	v1.POST("/applications", s.submitApplication)
+	v1.POST("/applications/:id/approve", s.approveApplication)
+	v1.POST("/applications/:id/reject", s.rejectApplication)
 	v1.GET("/approvals", s.approvals)
 	v1.POST("/approvals/:id/approve", s.approve)
 	v1.POST("/approvals/:id/reject", s.reject)
@@ -111,13 +113,13 @@ func generateTraceID() string {
 
 func (s *Server) health(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"status":        "ok",
-		"mode":          s.cfg.Mode,
-		"environment":   s.cfg.Environment,
-		"tools":         len(s.registry.List()),
-		"executions":    len(s.registry.Executions()),
-		"auditRecords":  len(s.auditor.List()),
-		"approvals":     len(s.registry.Approvals()),
+		"status":       "ok",
+		"mode":         s.cfg.Mode,
+		"environment":  s.cfg.Environment,
+		"tools":        len(s.registry.List()),
+		"executions":   len(s.registry.Executions()),
+		"auditRecords": len(s.auditor.List()),
+		"approvals":    len(s.registry.Approvals()),
 	})
 }
 
@@ -132,7 +134,7 @@ func (s *Server) dashboardSummary(c *gin.Context) {
 	})
 }
 
-func (s *Server) tools(c *gin.Context)    { c.JSON(http.StatusOK, s.registry.List()) }
+func (s *Server) tools(c *gin.Context) { c.JSON(http.StatusOK, s.registry.List()) }
 
 func (s *Server) toolDetail(c *gin.Context) {
 	tool, ok := s.registry.Get(c.Param("name"))
@@ -143,7 +145,7 @@ func (s *Server) toolDetail(c *gin.Context) {
 	c.JSON(http.StatusOK, tool)
 }
 
-func (s *Server) executions(c *gin.Context)   { c.JSON(http.StatusOK, s.registry.Executions()) }
+func (s *Server) executions(c *gin.Context) { c.JSON(http.StatusOK, s.registry.Executions()) }
 
 func (s *Server) executionDetail(c *gin.Context) {
 	exe, ok := s.registry.Execution(c.Param("id"))

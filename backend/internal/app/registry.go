@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"sort"
-	"strings"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/zlylong/darwin-ops-mcp/backend/internal/audit"
@@ -17,8 +17,9 @@ import (
 
 // Sentinel errors for registry operations.
 var (
-	ErrToolNotFound  = errors.New("tool not found")
-	ErrAlreadyExists = errors.New("tool already exists")
+	ErrToolNotFound        = errors.New("tool not found")
+	ErrAlreadyExists       = errors.New("tool already exists")
+	ErrApplicationNotFound = errors.New("application not found")
 )
 
 type Handler func(context.Context, map[string]any) (map[string]any, error)
@@ -33,9 +34,9 @@ type Registry struct {
 	policy      *policy.Engine
 	auditor     audit.Recorder
 	executions  *storage.ExecutionStore
-	approvals    *storage.ApprovalStore
-	appStore     []domain.ToolApplication
-	environment  domain.Environment
+	approvals   *storage.ApprovalStore
+	appStore    []domain.ToolApplication
+	environment domain.Environment
 }
 
 func NewRegistry(policyEngine *policy.Engine, auditor audit.Recorder, executions *storage.ExecutionStore, approvals *storage.ApprovalStore, env domain.Environment) *Registry {
@@ -254,7 +255,7 @@ func (r *Registry) Execute(ctx context.Context, name string, req domain.ExecuteR
 		return result, 500, err
 	}
 	exe.Result = output
-		r.executions.Update(exe.ID, func(e *domain.Execution) { e.Result = output })
+	r.executions.Update(exe.ID, func(e *domain.Execution) { e.Result = output })
 	record := domain.AuditRecord{
 		ExecutionID: exe.ID,
 		Actor:       req.Actor,
@@ -317,3 +318,29 @@ func (r *Registry) Applications() []domain.ToolApplication {
 	return out
 }
 
+func (r *Registry) decideApplication(id string, status domain.ApplicationStatus, decision string) (domain.ToolApplication, error) {
+	id = strings.TrimSpace(id)
+	if id == "" {
+		return domain.ToolApplication{}, errors.New("application id is required")
+	}
+	now := time.Now().UTC()
+	for i := range r.appStore {
+		if r.appStore[i].ID == id {
+			r.appStore[i].Status = status
+			r.appStore[i].Decision = decision
+			r.appStore[i].DecidedAt = &now
+			return r.appStore[i], nil
+		}
+	}
+	return domain.ToolApplication{}, fmt.Errorf("%w: %s", ErrApplicationNotFound, id)
+}
+
+// ApproveApplication approves a tool access application.
+func (r *Registry) ApproveApplication(id string) (domain.ToolApplication, error) {
+	return r.decideApplication(id, domain.ApplicationApproved, "approved by admin")
+}
+
+// RejectApplication rejects a tool access application.
+func (r *Registry) RejectApplication(id string) (domain.ToolApplication, error) {
+	return r.decideApplication(id, domain.ApplicationRejected, "rejected by admin")
+}

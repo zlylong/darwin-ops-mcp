@@ -1,4 +1,179 @@
-basePath: /api/v1
+basePath: /
+definitions:
+  domain.ApplicationStatus:
+    enum:
+    - pending
+    - approved
+    - rejected
+    type: string
+    x-enum-varnames:
+    - ApplicationPending
+    - ApplicationApproved
+    - ApplicationRejected
+  domain.Approval:
+    properties:
+      actor:
+        type: string
+      createdAt:
+        type: string
+      decidedAt:
+        type: string
+      executionId:
+        type: string
+      id:
+        type: string
+      reason:
+        type: string
+      status:
+        $ref: '#/definitions/domain.ApprovalStatus'
+      target:
+        type: string
+      tool:
+        type: string
+    type: object
+  domain.ApprovalStatus:
+    enum:
+    - pending
+    - approved
+    - rejected
+    type: string
+    x-enum-varnames:
+    - ApprovalPending
+    - ApprovalApproved
+    - ApprovalRejected
+  domain.AuditRecord:
+    properties:
+      action:
+        type: string
+      actor:
+        type: string
+      allowed:
+        type: boolean
+      at:
+        type: string
+      executionId:
+        type: string
+      id:
+        type: string
+      parameters:
+        additionalProperties: {}
+        type: object
+      reason:
+        type: string
+      role:
+        $ref: '#/definitions/domain.Role'
+      target:
+        type: string
+      traceId:
+        type: string
+    type: object
+  domain.Execution:
+    properties:
+      actor:
+        type: string
+      auditId:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      parameters:
+        additionalProperties: {}
+        type: object
+      reason:
+        type: string
+      result:
+        additionalProperties: {}
+        type: object
+      role:
+        $ref: '#/definitions/domain.Role'
+      status:
+        type: string
+      target:
+        type: string
+      tool:
+        type: string
+    type: object
+  domain.ParamSchema:
+    properties:
+      default:
+        description: optional default value
+      description:
+        description: human-readable description
+        type: string
+      required:
+        description: true = mandatory, false = optional
+        type: boolean
+      type:
+        description: '"string" | "number" | "boolean"'
+        type: string
+    type: object
+  domain.RiskLevel:
+    enum:
+    - low
+    - medium
+    - high
+    - critical
+    type: string
+    x-enum-varnames:
+    - RiskLow
+    - RiskMedium
+    - RiskHigh
+    - RiskCritical
+  domain.Role:
+    enum:
+    - viewer
+    - operator
+    - admin
+    type: string
+    x-enum-varnames:
+    - RoleViewer
+    - RoleOperator
+    - RoleAdmin
+  domain.Tool:
+    properties:
+      category:
+        type: string
+      description:
+        type: string
+      inputSchema:
+        additionalProperties:
+          $ref: '#/definitions/domain.ParamSchema'
+        type: object
+      name:
+        type: string
+      readOnly:
+        type: boolean
+      requiresApproval:
+        type: boolean
+      risk:
+        $ref: '#/definitions/domain.RiskLevel'
+    type: object
+  domain.ToolApplication:
+    properties:
+      actor:
+        type: string
+      createdAt:
+        type: string
+      decidedAt:
+        type: string
+      decision:
+        type: string
+      durationHrs:
+        type: integer
+      id:
+        type: string
+      reason:
+        type: string
+      risk:
+        $ref: '#/definitions/domain.RiskLevel'
+      role:
+        $ref: '#/definitions/domain.Role'
+      status:
+        $ref: '#/definitions/domain.ApplicationStatus'
+      tool:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -14,7 +189,255 @@ info:
   title: Darwin Ops MCP API
   version: "1.0"
 paths:
-  /tools:
+  /api/v1/applications:
+    get:
+      description: Returns all tool access applications in creation order (newest
+        last).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              additionalProperties: true
+              type: object
+            type: array
+      summary: List Applications
+      tags:
+      - applications
+    post:
+      consumes:
+      - application/json
+      description: Applies for access to a tool with a specific risk level, role,
+        and reason.
+      parameters:
+      - description: Tool application request
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Submit Tool Application
+      tags:
+      - applications
+  /api/v1/applications/{id}/approve:
+    post:
+      description: Approves a pending tool access application and records the decision
+        timestamp.
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.ToolApplication'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Approve Tool Application
+      tags:
+      - applications
+  /api/v1/applications/{id}/reject:
+    post:
+      description: Rejects a pending tool access application and records the decision
+        timestamp.
+      parameters:
+      - description: Application ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.ToolApplication'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Reject Tool Application
+      tags:
+      - applications
+  /api/v1/approvals:
+    get:
+      description: Returns all execution approval records.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Approval'
+            type: array
+      summary: List Execution Approvals
+      tags:
+      - approvals
+  /api/v1/approvals/{id}/approve:
+    post:
+      description: Marks a pending execution approval as approved.
+      parameters:
+      - description: Approval ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Approval'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Approve Execution Approval
+      tags:
+      - approvals
+  /api/v1/approvals/{id}/reject:
+    post:
+      description: Marks a pending execution approval as rejected.
+      parameters:
+      - description: Approval ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Approval'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Reject Execution Approval
+      tags:
+      - approvals
+  /api/v1/audit:
+    get:
+      description: Returns all audit records.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.AuditRecord'
+            type: array
+      summary: List Audit Records
+      tags:
+      - audit
+  /api/v1/dashboard/summary:
+    get:
+      description: Returns summary counts for tools, executions, audit records, and
+        approvals.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Dashboard Summary
+      tags:
+      - dashboard
+  /api/v1/executions:
+    get:
+      description: Returns all execution records.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Execution'
+            type: array
+      summary: List Executions
+      tags:
+      - executions
+  /api/v1/executions/{id}:
+    get:
+      description: Returns an execution record by ID.
+      parameters:
+      - description: Execution ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Execution'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get Execution
+      tags:
+      - executions
+  /api/v1/tools:
+    get:
+      description: Returns all registered tools.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Tool'
+            type: array
+      summary: List Tools
+      tags:
+      - tools
     post:
       consumes:
       - application/json
@@ -49,7 +472,7 @@ paths:
       summary: Create Tool
       tags:
       - tools
-  /tools/{name}:
+  /api/v1/tools/{name}:
     delete:
       description: Deletes an existing tool definition from the runtime registry
       parameters:
@@ -68,6 +491,30 @@ paths:
               type: string
             type: object
       summary: Delete Tool
+      tags:
+      - tools
+    get:
+      description: Returns a single registered tool by name.
+      parameters:
+      - description: Tool name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Tool'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get Tool
       tags:
       - tools
     put:
@@ -109,7 +556,7 @@ paths:
       summary: Update Tool
       tags:
       - tools
-  /tools/{name}/execute:
+  /api/v1/tools/{name}/execute:
     post:
       consumes:
       - application/json
@@ -159,4 +606,18 @@ paths:
       summary: Execute Tool
       tags:
       - tools
+  /healthz:
+    get:
+      description: Returns backend runtime health and object counts.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Health Check
+      tags:
+      - system
 swagger: "2.0"

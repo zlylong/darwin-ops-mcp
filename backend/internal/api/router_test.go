@@ -370,3 +370,59 @@ func TestExecuteTool_RequiresApprovalFlagCreatesApproval(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 	assert.Contains(t, w.Body.String(), "approval.flag")
 }
+
+func TestApplicationDecisionRoutes(t *testing.T) {
+	cfg := config.Config{}
+	registry := createTestRegistry()
+	auditor := &mockRecorder{}
+	logger := slog.Default()
+	r := NewRouter(cfg, registry, auditor, logger)
+
+	body, _ := json.Marshal(map[string]any{
+		"tool":        "test.tool",
+		"risk":        "high",
+		"role":        "operator",
+		"reason":      "temporary access",
+		"durationHrs": 8,
+	})
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/applications", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusCreated, w.Code)
+
+	var application domain.ToolApplication
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &application))
+	assert.Equal(t, domain.ApplicationPending, application.Status)
+
+	req = httptest.NewRequest(http.MethodPost, "/api/v1/applications/"+application.ID+"/approve", nil)
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), string(domain.ApplicationApproved))
+
+	body, _ = json.Marshal(map[string]any{
+		"tool":        "test.tool",
+		"risk":        "critical",
+		"role":        "admin",
+		"reason":      "break glass",
+		"durationHrs": 1,
+	})
+	req = httptest.NewRequest(http.MethodPost, "/api/v1/applications", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusCreated, w.Code)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &application))
+
+	req = httptest.NewRequest(http.MethodPost, "/api/v1/applications/"+application.ID+"/reject", nil)
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), string(domain.ApplicationRejected))
+
+	req = httptest.NewRequest(http.MethodPost, "/api/v1/applications/missing/reject", nil)
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusNotFound, w.Code)
+}

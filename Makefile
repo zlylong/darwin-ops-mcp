@@ -27,6 +27,7 @@ build:
 	cd frontend && npm install && npm run build
 
 docker-up:
+	docker compose pull backend || true
 	docker compose up --build -d
 	@echo ""
 	@echo "darwin-ops-mcp is starting. Open the frontend at: http://localhost:5173"

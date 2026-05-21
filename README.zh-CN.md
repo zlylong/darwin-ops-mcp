@@ -23,11 +23,17 @@
 make docker-up
 ```
 
-这会构建并启动：
+这会从 GitHub Container Registry 拉取已经由 CI/CD 编译好的后端镜像，在本机仅构建前端，并启动：
 
 - `backend`：端口 `8080`
 - `frontend`：端口 `5173`
 - `postgres`：端口 `5432`
+
+后端镜像由 GitHub Actions（`.github/workflows/backend-image.yml`）编译并发布为 `ghcr.io/zlylong/ops-mcp-backend:main`。这样部署机器执行 `docker compose up` 时不再本地编译 Go 后端。若需要部署指定后端镜像，可在启动 Compose 前设置 `BACKEND_IMAGE`：
+
+```bash
+BACKEND_IMAGE=ghcr.io/zlylong/ops-mcp-backend:v1.0.0 docker compose up -d
+```
 
 检查后端健康状态：
 
@@ -136,7 +142,7 @@ make reset-db
 make setup        # 为本地开发安装 Go 和前端依赖
 make dev          # 不使用 Docker，启动后端和前端开发服务器
 make test         # 运行后端测试和前端类型检查
-make docker-up    # 在 Docker 中构建并启动 backend、frontend、postgres
+make docker-up    # 拉取 CI 构建的后端镜像，构建前端，并启动 Docker 服务
 make docker-down  # 停止 Docker 容器，保留数据库 volume
 make reset-db     # 停止 Docker 容器并删除数据库 volume
 ```

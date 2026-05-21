@@ -103,7 +103,7 @@ async function mockRequest<T>(path: string, init?: RequestInit): Promise<T> {
       risk: app.risk,
       role: app.role,
       actor: 'anonymous',
-      status: app.risk === 'low' || app.risk === 'medium' ? 'auto_approved' : 'pending',
+      status: app.risk === 'low' || app.risk === 'medium' ? 'approved' : 'pending',
       reason: app.reason,
       durationHrs: app.durationHrs ?? 24,
       createdAt: now,

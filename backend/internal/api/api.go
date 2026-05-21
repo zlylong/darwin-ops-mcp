@@ -10,7 +10,7 @@
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT
 // @host localhost:8080
-// @BasePath /api/v1
+// @BasePath /
 package api
 
 import (
@@ -33,7 +33,7 @@ import (
 // @Success 201 {object} object
 // @Failure 400 {object} map[string]string
 // @Failure 409 {object} map[string]string
-// @Router /tools [post]
+// @Router /api/v1/tools [post]
 func (s *Server) createTool(c *gin.Context) {
 	var tool domain.Tool
 	if err := c.ShouldBindJSON(&tool); err != nil {
@@ -64,7 +64,7 @@ func (s *Server) createTool(c *gin.Context) {
 // @Success 200 {object} object
 // @Failure 400 {object} map[string]string
 // @Failure 404 {object} map[string]string
-// @Router /tools/{name} [put]
+// @Router /api/v1/tools/{name} [put]
 func (s *Server) updateTool(c *gin.Context) {
 	var tool domain.Tool
 	if err := c.ShouldBindJSON(&tool); err != nil {
@@ -91,7 +91,7 @@ func (s *Server) updateTool(c *gin.Context) {
 // @Param name path string true "Tool name"
 // @Success 204
 // @Failure 404 {object} map[string]string
-// @Router /tools/{name} [delete]
+// @Router /api/v1/tools/{name} [delete]
 func (s *Server) deleteTool(c *gin.Context) {
 	if err := s.registry.DeleteTool(c.Param("name")); err != nil {
 		status := http.StatusBadRequest
@@ -108,7 +108,9 @@ func (s *Server) deleteTool(c *gin.Context) {
 //
 // @Summary Execute Tool
 // @Description Executes a tool with the provided parameters. Returns 202 if approval
-//     is required; returns 200 on immediate execution.
+//
+//	is required; returns 200 on immediate execution.
+//
 // @Tags tools
 // @Accept json
 // @Produce json
@@ -119,7 +121,7 @@ func (s *Server) deleteTool(c *gin.Context) {
 // @Failure 400 {object} map[string]string
 // @Failure 403 {object} map[string]string
 // @Failure 404 {object} map[string]string
-// @Router /tools/{name}/execute [post]
+// @Router /api/v1/tools/{name}/execute [post]
 func (s *Server) executeTool(c *gin.Context) {
 	var req executeHTTP
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -138,15 +140,17 @@ func (s *Server) executeTool(c *gin.Context) {
 //
 // @Summary Submit Tool Application
 // @Description Applies for access to a tool with a specific risk level, role, and reason.
-//     Returns 201 with the application record. High-risk (high/critical) applications
-//     are set to "pending" and require admin review; low/medium are auto-approved.
+//
+//	Returns 201 with the application record. High-risk (high/critical) applications
+//	are set to "pending" and require admin review; low/medium are auto-approved.
+//
 // @Tags applications
 // @Accept json
 // @Produce json
 // @Param request body map[string]any true "Tool application request"
 // @Success 201 {object} map[string]any
 // @Failure 400 {object} map[string]string
-// @Router /applications [post]
+// @Router /api/v1/applications [post]
 func (s *Server) submitApplication(c *gin.Context) {
 	var req domain.ToolApplicationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -187,7 +191,53 @@ func (s *Server) submitApplication(c *gin.Context) {
 // @Tags applications
 // @Produce json
 // @Success 200 {array} map[string]any
-// @Router /applications [get]
+// @Router /api/v1/applications [get]
 func (s *Server) listApplications(c *gin.Context) {
 	c.JSON(http.StatusOK, s.registry.Applications())
+}
+
+// approveApplication approves a pending tool access application
+//
+// @Summary Approve Tool Application
+// @Description Approves a pending tool access application and records the decision timestamp.
+// @Tags applications
+// @Produce json
+// @Param id path string true "Application ID"
+// @Success 200 {object} domain.ToolApplication
+// @Failure 404 {object} map[string]string
+// @Router /api/v1/applications/{id}/approve [post]
+func (s *Server) approveApplication(c *gin.Context) {
+	application, err := s.registry.ApproveApplication(c.Param("id"))
+	if err != nil {
+		status := http.StatusBadRequest
+		if errors.Is(err, app.ErrApplicationNotFound) {
+			status = http.StatusNotFound
+		}
+		c.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, application)
+}
+
+// rejectApplication rejects a pending tool access application
+//
+// @Summary Reject Tool Application
+// @Description Rejects a pending tool access application and records the decision timestamp.
+// @Tags applications
+// @Produce json
+// @Param id path string true "Application ID"
+// @Success 200 {object} domain.ToolApplication
+// @Failure 404 {object} map[string]string
+// @Router /api/v1/applications/{id}/reject [post]
+func (s *Server) rejectApplication(c *gin.Context) {
+	application, err := s.registry.RejectApplication(c.Param("id"))
+	if err != nil {
+		status := http.StatusBadRequest
+		if errors.Is(err, app.ErrApplicationNotFound) {
+			status = http.StatusNotFound
+		}
+		c.JSON(status, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, application)
 }

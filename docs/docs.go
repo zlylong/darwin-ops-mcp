@@ -23,7 +23,375 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/tools": {
+        "/api/v1/applications": {
+            "get": {
+                "description": "Returns all tool access applications in creation order (newest last).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "applications"
+                ],
+                "summary": "List Applications",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "additionalProperties": true
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Applies for access to a tool with a specific risk level, role, and reason.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "applications"
+                ],
+                "summary": "Submit Tool Application",
+                "parameters": [
+                    {
+                        "description": "Tool application request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/applications/{id}/approve": {
+            "post": {
+                "description": "Approves a pending tool access application and records the decision timestamp.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "applications"
+                ],
+                "summary": "Approve Tool Application",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Application ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ToolApplication"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/applications/{id}/reject": {
+            "post": {
+                "description": "Rejects a pending tool access application and records the decision timestamp.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "applications"
+                ],
+                "summary": "Reject Tool Application",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Application ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ToolApplication"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/approvals": {
+            "get": {
+                "description": "Returns all execution approval records.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "approvals"
+                ],
+                "summary": "List Execution Approvals",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Approval"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/approvals/{id}/approve": {
+            "post": {
+                "description": "Marks a pending execution approval as approved.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "approvals"
+                ],
+                "summary": "Approve Execution Approval",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Approval ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Approval"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/approvals/{id}/reject": {
+            "post": {
+                "description": "Marks a pending execution approval as rejected.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "approvals"
+                ],
+                "summary": "Reject Execution Approval",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Approval ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Approval"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/audit": {
+            "get": {
+                "description": "Returns all audit records.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "audit"
+                ],
+                "summary": "List Audit Records",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.AuditRecord"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/dashboard/summary": {
+            "get": {
+                "description": "Returns summary counts for tools, executions, audit records, and approvals.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "dashboard"
+                ],
+                "summary": "Dashboard Summary",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/executions": {
+            "get": {
+                "description": "Returns all execution records.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "executions"
+                ],
+                "summary": "List Executions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Execution"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/executions/{id}": {
+            "get": {
+                "description": "Returns an execution record by ID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "executions"
+                ],
+                "summary": "Get Execution",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Execution ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Execution"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/tools": {
+            "get": {
+                "description": "Returns all registered tools.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tools"
+                ],
+                "summary": "List Tools",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Tool"
+                            }
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Creates a custom tool definition in the runtime registry",
                 "consumes": [
@@ -76,7 +444,43 @@ const docTemplate = `{
                 }
             }
         },
-        "/tools/{name}": {
+        "/api/v1/tools/{name}": {
+            "get": {
+                "description": "Returns a single registered tool by name.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tools"
+                ],
+                "summary": "Get Tool",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tool name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Tool"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
             "put": {
                 "description": "Updates an existing tool definition in the runtime registry",
                 "consumes": [
@@ -166,7 +570,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/tools/{name}/execute": {
+        "/api/v1/tools/{name}/execute": {
             "post": {
                 "description": "Executes a tool with the provided parameters. Returns 202 if approval",
                 "consumes": [
@@ -240,6 +644,281 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/healthz": {
+            "get": {
+                "description": "Returns backend runtime health and object counts.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "system"
+                ],
+                "summary": "Health Check",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "domain.ApplicationStatus": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "approved",
+                "rejected"
+            ],
+            "x-enum-varnames": [
+                "ApplicationPending",
+                "ApplicationApproved",
+                "ApplicationRejected"
+            ]
+        },
+        "domain.Approval": {
+            "type": "object",
+            "properties": {
+                "actor": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "decidedAt": {
+                    "type": "string"
+                },
+                "executionId": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/domain.ApprovalStatus"
+                },
+                "target": {
+                    "type": "string"
+                },
+                "tool": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.ApprovalStatus": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "approved",
+                "rejected"
+            ],
+            "x-enum-varnames": [
+                "ApprovalPending",
+                "ApprovalApproved",
+                "ApprovalRejected"
+            ]
+        },
+        "domain.AuditRecord": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "actor": {
+                    "type": "string"
+                },
+                "allowed": {
+                    "type": "boolean"
+                },
+                "at": {
+                    "type": "string"
+                },
+                "executionId": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "parameters": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "role": {
+                    "$ref": "#/definitions/domain.Role"
+                },
+                "target": {
+                    "type": "string"
+                },
+                "traceId": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.Execution": {
+            "type": "object",
+            "properties": {
+                "actor": {
+                    "type": "string"
+                },
+                "auditId": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "parameters": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "result": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "role": {
+                    "$ref": "#/definitions/domain.Role"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "target": {
+                    "type": "string"
+                },
+                "tool": {
+                    "type": "string"
+                }
+            }
+        },
+        "domain.ParamSchema": {
+            "type": "object",
+            "properties": {
+                "default": {
+                    "description": "optional default value"
+                },
+                "description": {
+                    "description": "human-readable description",
+                    "type": "string"
+                },
+                "required": {
+                    "description": "true = mandatory, false = optional",
+                    "type": "boolean"
+                },
+                "type": {
+                    "description": "\"string\" | \"number\" | \"boolean\"",
+                    "type": "string"
+                }
+            }
+        },
+        "domain.RiskLevel": {
+            "type": "string",
+            "enum": [
+                "low",
+                "medium",
+                "high",
+                "critical"
+            ],
+            "x-enum-varnames": [
+                "RiskLow",
+                "RiskMedium",
+                "RiskHigh",
+                "RiskCritical"
+            ]
+        },
+        "domain.Role": {
+            "type": "string",
+            "enum": [
+                "viewer",
+                "operator",
+                "admin"
+            ],
+            "x-enum-varnames": [
+                "RoleViewer",
+                "RoleOperator",
+                "RoleAdmin"
+            ]
+        },
+        "domain.Tool": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "inputSchema": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/domain.ParamSchema"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "readOnly": {
+                    "type": "boolean"
+                },
+                "requiresApproval": {
+                    "type": "boolean"
+                },
+                "risk": {
+                    "$ref": "#/definitions/domain.RiskLevel"
+                }
+            }
+        },
+        "domain.ToolApplication": {
+            "type": "object",
+            "properties": {
+                "actor": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "decidedAt": {
+                    "type": "string"
+                },
+                "decision": {
+                    "type": "string"
+                },
+                "durationHrs": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "risk": {
+                    "$ref": "#/definitions/domain.RiskLevel"
+                },
+                "role": {
+                    "$ref": "#/definitions/domain.Role"
+                },
+                "status": {
+                    "$ref": "#/definitions/domain.ApplicationStatus"
+                },
+                "tool": {
+                    "type": "string"
+                }
+            }
         }
     }
 }`
@@ -248,7 +927,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/api/v1",
+	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Darwin Ops MCP API",
 	Description:      "Darwin Ops MCP Backend API with Tool Registry, Policy Engine, and Approval Flow.\nReturns immediate execution result or 202 + approval ID for high-risk tools.",
