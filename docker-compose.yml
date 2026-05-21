@@ -3,7 +3,12 @@ name: darwin-ops-mcp
 services:
   backend:
     image: ${BACKEND_IMAGE:-ghcr.io/zlylong/ops-mcp-backend:main}
-    pull_policy: always
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      args:
+        BACKEND_BINARY_BASE_URL: ${BACKEND_BINARY_BASE_URL:-https://github.com/zlylong/darwin-ops-mcp/releases/download/backend-main}
+    pull_policy: ${BACKEND_PULL_POLICY:-missing}
     environment:
       DARWIN_OPS_MCP_ADDR: ":8080"
       DARWIN_OPS_MCP_MODE: "mock"

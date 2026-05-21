@@ -33,6 +33,15 @@ docker-up:
 	@echo "darwin-ops-mcp is starting. Open the frontend at: http://localhost:5173"
 	@echo "Backend health check:              http://localhost:8080/healthz"
 
+# Rebuild the backend container locally without compiling Go on this host.
+# Dockerfile.backend downloads the CI-built binary from the rolling GitHub release.
+docker-up-local-backend:
+	docker compose build --no-cache backend
+	docker compose up -d backend frontend
+	@echo ""
+	@echo "Backend rebuilt from GitHub release binary and restarted."
+	@echo "Backend health check: http://localhost:8080/healthz"
+
 docker-down:
 	docker compose down
 

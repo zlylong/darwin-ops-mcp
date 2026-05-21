@@ -23,13 +23,21 @@ The easiest path is Docker. Install Docker Desktop or Docker Engine with the Com
 make docker-up
 ```
 
-This pulls the pre-built backend image from GitHub Container Registry, builds the frontend locally, and starts:
+This pulls the latest backend image when available, rebuilds the backend container from the GitHub-published binary without compiling Go locally, builds the frontend locally, and starts:
 
 - `backend` on port `8080`
 - `frontend` on port `5173`
 - `postgres` on port `5432`
 
-The backend image is compiled by GitHub Actions (`.github/workflows/backend-image.yml`) and published as `ghcr.io/zlylong/ops-mcp-backend:main`. This keeps deployment hosts from compiling Go code during `docker compose up`. To deploy a different backend image, set `BACKEND_IMAGE` before starting Compose:
+The backend binary is compiled by GitHub Actions (`.github/workflows/backend-image.yml`) and published to the rolling GitHub Release tag `backend-main` as `darwin-ops-mcp-linux-amd64` and `darwin-ops-mcp-linux-arm64`. `Dockerfile.backend` downloads that binary during Docker build, so deployment hosts can rebuild the backend container without a local Go toolchain or expensive `go build`. The same workflow also publishes `ghcr.io/zlylong/ops-mcp-backend:main`.
+
+To force a local backend Docker rebuild from the GitHub-published binary:
+
+```bash
+make docker-up-local-backend
+```
+
+To deploy a different backend image, set `BACKEND_IMAGE` before starting Compose:
 
 ```bash
 BACKEND_IMAGE=ghcr.io/zlylong/ops-mcp-backend:v1.0.0 docker compose up -d
@@ -142,7 +150,8 @@ After `make reset-db`, run `make docker-up` again to start a fresh stack.
 make setup        # install Go and frontend dependencies for local development
 make dev          # run backend and frontend dev servers without Docker
 make test         # run backend tests and frontend type checks
-make docker-up    # pull the CI-built backend image, build frontend, and start Docker services
+make docker-up    # rebuild backend from CI-built GitHub binary, build frontend, and start Docker services
+make docker-up-local-backend # force only the backend Docker image to rebuild from the GitHub binary
 make docker-down  # stop Docker containers, keep database volume
 make reset-db     # stop Docker containers and delete the database volume
 ```

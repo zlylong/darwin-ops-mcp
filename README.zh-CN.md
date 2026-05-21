@@ -29,7 +29,15 @@ make docker-up
 - `frontend`：端口 `5173`
 - `postgres`：端口 `5432`
 
-后端镜像由 GitHub Actions（`.github/workflows/backend-image.yml`）编译并发布为 `ghcr.io/zlylong/ops-mcp-backend:main`。这样部署机器执行 `docker compose up` 时不再本地编译 Go 后端。若需要部署指定后端镜像，可在启动 Compose 前设置 `BACKEND_IMAGE`：
+后端二进制由 GitHub Actions（`.github/workflows/backend-image.yml`）编译，并发布到滚动 GitHub Release 标签 `backend-main`，文件名为 `darwin-ops-mcp-linux-amd64` 和 `darwin-ops-mcp-linux-arm64`。`Dockerfile.backend` 在 Docker 构建阶段下载该二进制，因此部署机器可以重建后端容器，但不需要本地 Go 工具链，也不需要执行高开销的 `go build`。同一条流水线也会发布 `ghcr.io/zlylong/ops-mcp-backend:main` 镜像。
+
+如需强制从 GitHub 发布的二进制重新构建本地后端 Docker 镜像：
+
+```bash
+make docker-up-local-backend
+```
+
+若需要部署指定后端镜像，可在启动 Compose 前设置 `BACKEND_IMAGE`：
 
 ```bash
 BACKEND_IMAGE=ghcr.io/zlylong/ops-mcp-backend:v1.0.0 docker compose up -d
@@ -142,7 +150,8 @@ make reset-db
 make setup        # 为本地开发安装 Go 和前端依赖
 make dev          # 不使用 Docker，启动后端和前端开发服务器
 make test         # 运行后端测试和前端类型检查
-make docker-up    # 拉取 CI 构建的后端镜像，构建前端，并启动 Docker 服务
+make docker-up    # 从 CI 构建的 GitHub 二进制重建后端，构建前端，并启动 Docker 服务
+make docker-up-local-backend # 仅强制后端 Docker 镜像从 GitHub 二进制重建
 make docker-down  # 停止 Docker 容器，保留数据库 volume
 make reset-db     # 停止 Docker 容器并删除数据库 volume
 ```
