@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Avatar, ConfigProvider, Dropdown, Layout, Menu, Space, Typography } from 'antd';
 import type { MenuProps } from 'antd';
-import { ApiOutlined, AuditOutlined, CheckCircleOutlined, DashboardOutlined, FileSearchOutlined, ToolOutlined, UserOutlined } from '@ant-design/icons';
+import { ApiOutlined, AuditOutlined, CheckCircleOutlined, DashboardOutlined, FileSearchOutlined, KeyOutlined, ToolOutlined, UserOutlined } from '@ant-design/icons';
 import zhCN from 'antd/locale/zh_CN';
 import enUS from 'antd/locale/en_US';
 import 'antd/dist/reset.css';
@@ -16,6 +16,7 @@ import { ExecutionsPage } from './pages/ExecutionsPage';
 import { AuditPage } from './pages/AuditPage';
 import { ApprovalsPage } from './pages/ApprovalsPage';
 import { ToolApplicationsPage } from './pages/ToolApplicationsPage';
+import { AgentAPIKeysPage } from './pages/AgentAPIKeysPage';
 
 type Language = 'en' | 'zh';
 let currentLanguage: Language = (localStorage.getItem('darwin-ops-mcp-language') as Language) || 'en';
@@ -46,6 +47,7 @@ const menuItems = [
   { key: '/audit', icon: <AuditOutlined />, label: '审计中心' },
   { key: '/approvals', icon: <CheckCircleOutlined />, label: '任务审批中心' },
   { key: '/tool-applications', icon: <ToolOutlined />, label: '工具审批中心' },
+  { key: '/agent-keys', icon: <KeyOutlined />, label: 'Agent Key 管理' },
 ];
 
 function AppShell() {
@@ -75,6 +77,7 @@ function AppShell() {
             <Route path="/audit" element={<AuditPage />} />
             <Route path="/approvals" element={<ApprovalsPage />} />
             <Route path="/tool-applications" element={<ToolApplicationsPage />} />
+            <Route path="/agent-keys" element={<AgentAPIKeysPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Layout.Content>

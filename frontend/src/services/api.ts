@@ -1,7 +1,16 @@
-import type { Application, ApplicationRequest, AuditEvent, Approval, Execution, ExecuteResult, ExecuteRequest, Tool, ToolRequest, Summary } from '../types';
+import type { AgentAPIKey, AgentAPIKeyCreateRequest, AgentAPIKeyCreateResponse, Application, ApplicationRequest, AuditEvent, Approval, Execution, ExecuteResult, ExecuteRequest, Tool, ToolRequest, Summary } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? '';
 const MOCK_API = import.meta.env.VITE_MOCK_API === 'true';
+export const API_TOKEN_STORAGE_KEY = 'darwin-ops-mcp-api-token';
+
+function authHeaders(init?: RequestInit): HeadersInit {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  Object.entries((init?.headers ?? {}) as Record<string, string>).forEach(([key, value]) => { headers[key] = value; });
+  const token = typeof window !== 'undefined' ? window.localStorage.getItem(API_TOKEN_STORAGE_KEY) : '';
+  if (token) headers.Authorization = 'Bearer ' + token;
+  return headers;
+}
 
 class ApiError extends Error {
   constructor(public status: number, public body: unknown) {
@@ -11,7 +20,7 @@ class ApiError extends Error {
 
 async function requestJSON<T>(path: string, init?: RequestInit): Promise<T> {
   if (MOCK_API) return mockRequest<T>(path, init);
-  const res = await fetch(`${API_BASE}${path}`, { ...init, headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) } });
+  const res = await fetch(`${API_BASE}${path}`, { ...init, headers: authHeaders(init) });
   const text = await res.text();
   const body = text ? JSON.parse(text) : null;
   if (!res.ok) throw new ApiError(res.status, body);
@@ -22,6 +31,7 @@ const mockExecutions: Execution[] = [];
 const mockAudit: AuditEvent[] = [];
 const mockApprovals: Approval[] = [];
 const mockApplications: Application[] = [];
+const mockAgentAPIKeys: AgentAPIKey[] = [];
 const mockTools: Tool[] = [
   { name: 'k8s.list_pods', description: 'List Kubernetes pods in a namespace.', category: 'kubernetes', readOnly: true, risk: 'low', requiresApproval: false, inputSchema: { namespace: 'string?' } },
   { name: 'k8s.get_pod_logs', description: 'Fetch pod logs.', category: 'kubernetes', readOnly: true, risk: 'medium', requiresApproval: false, inputSchema: { pod: 'string', namespace: 'string?' } },
@@ -130,6 +140,37 @@ async function mockRequest<T>(path: string, init?: RequestInit): Promise<T> {
     app.decidedAt = new Date().toISOString();
     return app as T;
   }
+  if (path === '/api/v1/agent-keys' && (!init?.method || init.method === 'GET')) return mockAgentAPIKeys as T;
+  if (path === '/api/v1/agent-keys' && init?.method === 'POST') {
+    const req = JSON.parse(String(init.body ?? '{}')) as AgentAPIKeyCreateRequest;
+    if (!req.name) throw new ApiError(400, { error: 'name is required' });
+    if (!req.actor) throw new ApiError(400, { error: 'actor is required' });
+    if (!req.reason) throw new ApiError(400, { error: 'reason is required' });
+    const now = new Date().toISOString();
+    const secret = 'domcp_mock_' + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    const key: AgentAPIKey = {
+      id: 'mock-key-' + Date.now(),
+      name: req.name,
+      actor: req.actor,
+      role: req.role,
+      reason: req.reason,
+      scopes: req.scopes ?? [],
+      keyPrefix: secret.slice(0, 12),
+      status: 'active',
+      createdAt: now,
+      expiresAt: req.expiresInHrs && req.expiresInHrs > 0 ? new Date(Date.now() + req.expiresInHrs * 3600 * 1000).toISOString() : undefined,
+    };
+    mockAgentAPIKeys.unshift(key);
+    return { ...key, secret } as T;
+  }
+  if (path.startsWith('/api/v1/agent-keys/') && (path.endsWith('/revoke') || init?.method === 'DELETE')) {
+    const id = decodeURIComponent(path.replace('/api/v1/agent-keys/', '').replace('/revoke', ''));
+    const key = mockAgentAPIKeys.find((item) => item.id === id);
+    if (!key) throw new ApiError(404, { error: 'agent API key not found' });
+    key.status = 'revoked';
+    key.revokedAt = new Date().toISOString();
+    return key as T;
+  }
   if (path === '/healthz') return { status: 'ok', mode: 'mock', environment: 'development' } as T;
   throw new ApiError(404, { error: 'mock route not found' });
 }
@@ -158,4 +199,7 @@ export const api = {
   createApplication: (req: ApplicationRequest) => requestJSON<Application>('/api/v1/applications', { method: 'POST', body: JSON.stringify(req) }),
   approveApplication: (id: string) => requestJSON<Application>(`/api/v1/applications/${encodeURIComponent(id)}/approve`, { method: 'POST' }),
   rejectApplication: (id: string) => requestJSON<Application>(`/api/v1/applications/${encodeURIComponent(id)}/reject`, { method: 'POST' }),
+  agentAPIKeys: () => requestJSON<AgentAPIKey[]>('/api/v1/agent-keys'),
+  createAgentAPIKey: (req: AgentAPIKeyCreateRequest) => requestJSON<AgentAPIKeyCreateResponse>('/api/v1/agent-keys', { method: 'POST', body: JSON.stringify(req) }),
+  revokeAgentAPIKey: (id: string) => requestJSON<AgentAPIKey>(`/api/v1/agent-keys/${encodeURIComponent(id)}/revoke`, { method: 'POST' }),
 };

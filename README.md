@@ -65,6 +65,8 @@ The language selector in the top bar can switch the web UI between English and C
 
 ## 3. How to login or use mock user
 
+The sidebar also includes **Agent Key Management**. When `DARWIN_OPS_MCP_API_TOKEN` is enabled, paste the Master Token into that page to list, issue, and revoke per-agent Bearer tokens. The generated secret is shown exactly once; copy it immediately and never paste full secrets into docs or logs.
+
 There is no password login in this MVP. Use the built-in mock identity when executing tools:
 
 - Actor: `mock.user`

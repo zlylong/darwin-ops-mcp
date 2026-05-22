@@ -727,3 +727,16 @@ def call_tool(tool_name, args, actor, role="viewer", target=""):
 - [ ] MCP `tools/list` returns tool schemas.
 - [ ] MCP `tools/call` returns `structuredContent.httpStatus` and the agent handles it.
 - [ ] Audit log contains useful `actor`, `target`, `executionId`, and trace ID.
+
+## Agent API Key Management
+
+### Frontend management page
+
+The web console includes **Agent Key 管理** at `/agent-keys` for Master Token holders. It can:
+
+- Save the Master Token in browser localStorage for API calls. Do not store or display it server-side.
+- List key metadata only (`id`, `name`, `actor`, `role`, `keyPrefix`, `status`, timestamps).
+- Issue a new key and show plaintext `secret` exactly once in a copyable modal.
+- Revoke active keys.
+
+Never document full `secret` values. Use `[REDACTED]` or only `keyPrefix` in examples and support notes. Current keys are in-memory, so backend restarts invalidate them until persistent storage is added.
