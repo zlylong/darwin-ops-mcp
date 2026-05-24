@@ -67,6 +67,9 @@ http://localhost:5173
 
 侧边栏提供 **Agent Key 管理** 页面。启用 `DARWIN_OPS_MCP_API_TOKEN` 后，在该页面填写 Master Token 即可查看、颁发和吊销每个 Agent 独立的 Bearer Token。创建响应中的 Secret 只显示一次，请立即复制并妥善保存，禁止把完整密钥写入文档或日志。
 
+
+侧边栏还提供 **JumpServer 管理** 页面，可登记多个 JumpServer 服务器。配置包含名称、Base URL、版本、认证方式、状态和备注；Token、Private Token、Access Key Secret 等凭据仅在创建/更新时提交，列表和详情只显示 `hasCredential`，不会回显明文。当前版本先支持多实例配置与连通性检测，后续工具执行可按实例 ID 路由到不同堡垒机。
+
 已支持用户登录和用户管理。侧边栏提供：
 - **个人中心**：查看/修改个人信息、修改密码
 - **用户管理**（Admin）：用户列表、新建、编辑、删除、密码重置

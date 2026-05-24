@@ -1,4 +1,4 @@
-import type { AgentAPIKey, AgentAPIKeyCreateRequest, AgentAPIKeyCreateResponse, Application, ApplicationRequest, AuditEvent, Approval, ChangePasswordRequest, Execution, ExecuteResult, ExecuteRequest, LoginResponse, Tool, ToolRequest, Summary, User, UserCreateRequest, UserUpdateRequest, ChangePasswordByAdminRequest } from '../types';
+import type { AgentAPIKey, AgentAPIKeyCreateRequest, AgentAPIKeyCreateResponse, Application, ApplicationRequest, AuditEvent, Approval, ChangePasswordRequest, Execution, ExecuteResult, ExecuteRequest, LoginResponse, Tool, ToolRequest, Summary, User, UserCreateRequest, UserUpdateRequest, ChangePasswordByAdminRequest, JumpServerConnectionCheck, JumpServerInstance, JumpServerInstanceRequest } from '../types';
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? '';
 const MOCK_API = import.meta.env.VITE_MOCK_API === 'true';
@@ -32,6 +32,7 @@ const mockAudit: AuditEvent[] = [];
 const mockApprovals: Approval[] = [];
 const mockApplications: Application[] = [];
 const mockAgentAPIKeys: AgentAPIKey[] = [];
+const mockJumpServers: JumpServerInstance[] = [];
 const mockTools: Tool[] = [
   { name: 'k8s.list_pods', description: 'List Kubernetes pods in a namespace.', category: 'kubernetes', readOnly: true, risk: 'low', requiresApproval: false, inputSchema: { namespace: 'string?' } },
   { name: 'k8s.get_pod_logs', description: 'Fetch pod logs.', category: 'kubernetes', readOnly: true, risk: 'medium', requiresApproval: false, inputSchema: { pod: 'string', namespace: 'string?' } },
@@ -140,7 +141,75 @@ async function mockRequest<T>(path: string, init?: RequestInit): Promise<T> {
     app.decidedAt = new Date().toISOString();
     return app as T;
   }
+
+  if (path === '/api/v1/jumpservers' && (!init?.method || init.method === 'GET')) return mockJumpServers as T;
+  if (path === '/api/v1/jumpservers' && init?.method === 'POST') {
+    const req = JSON.parse(String(init.body ?? '{}')) as JumpServerInstanceRequest;
+    if (!req.name) throw new ApiError(400, { error: 'name is required' });
+    if (!req.baseUrl) throw new ApiError(400, { error: 'baseUrl is required' });
+    const now = new Date().toISOString();
+    const item: JumpServerInstance = { id: 'mock-jms-' + Date.now(), name: req.name, baseUrl: req.baseUrl, version: req.version, authType: req.authType ?? 'token', status: req.status ?? 'active', description: req.description, hasCredential: !!(req.credential || req.accessKeyId || req.accessKeySecret), createdAt: now, updatedAt: now };
+    mockJumpServers.unshift(item);
+    return item as T;
+  }
+  if (path.startsWith('/api/v1/jumpservers/') && path.endsWith('/test')) {
+    const id = decodeURIComponent(path.replace('/api/v1/jumpservers/', '').replace('/test', ''));
+    const item = mockJumpServers.find((entry) => entry.id === id);
+    if (!item) throw new ApiError(404, { error: 'jumpserver instance not found' });
+    item.status = 'active';
+    item.lastCheckedAt = new Date().toISOString();
+    return { id: item.id, name: item.name, baseUrl: item.baseUrl, reachable: true, status: item.status, message: 'mock JumpServer endpoint reachable', checkedAt: item.lastCheckedAt } as T;
+  }
+  if (path.startsWith('/api/v1/jumpservers/')) {
+    const id = decodeURIComponent(path.replace('/api/v1/jumpservers/', ''));
+    const idx = mockJumpServers.findIndex((entry) => entry.id === id);
+    if (idx < 0) throw new ApiError(404, { error: 'jumpserver instance not found' });
+    if (init?.method === 'PUT') {
+      const req = JSON.parse(String(init.body ?? '{}')) as JumpServerInstanceRequest;
+      mockJumpServers[idx] = { ...mockJumpServers[idx], ...req, hasCredential: mockJumpServers[idx].hasCredential || !!(req.credential || req.accessKeyId || req.accessKeySecret), updatedAt: new Date().toISOString() } as JumpServerInstance;
+      return mockJumpServers[idx] as T;
+    }
+    if (init?.method === 'DELETE') {
+      mockJumpServers.splice(idx, 1);
+      return null as T;
+    }
+    return mockJumpServers[idx] as T;
+  }
   if (path === '/api/v1/agent-keys' && (!init?.method || init.method === 'GET')) return mockAgentAPIKeys as T;
+
+  if (path === '/api/v1/jumpservers' && (!init?.method || init.method === 'GET')) return mockJumpServers as T;
+  if (path === '/api/v1/jumpservers' && init?.method === 'POST') {
+    const req = JSON.parse(String(init.body ?? '{}')) as JumpServerInstanceRequest;
+    if (!req.name) throw new ApiError(400, { error: 'name is required' });
+    if (!req.baseUrl) throw new ApiError(400, { error: 'baseUrl is required' });
+    const now = new Date().toISOString();
+    const item: JumpServerInstance = { id: 'mock-jms-' + Date.now(), name: req.name, baseUrl: req.baseUrl, version: req.version, authType: req.authType ?? 'token', status: req.status ?? 'active', description: req.description, hasCredential: !!(req.credential || req.accessKeyId || req.accessKeySecret), createdAt: now, updatedAt: now };
+    mockJumpServers.unshift(item);
+    return item as T;
+  }
+  if (path.startsWith('/api/v1/jumpservers/') && path.endsWith('/test')) {
+    const id = decodeURIComponent(path.replace('/api/v1/jumpservers/', '').replace('/test', ''));
+    const item = mockJumpServers.find((entry) => entry.id === id);
+    if (!item) throw new ApiError(404, { error: 'jumpserver instance not found' });
+    item.status = 'active';
+    item.lastCheckedAt = new Date().toISOString();
+    return { id: item.id, name: item.name, baseUrl: item.baseUrl, reachable: true, status: item.status, message: 'mock JumpServer endpoint reachable', checkedAt: item.lastCheckedAt } as T;
+  }
+  if (path.startsWith('/api/v1/jumpservers/')) {
+    const id = decodeURIComponent(path.replace('/api/v1/jumpservers/', ''));
+    const idx = mockJumpServers.findIndex((entry) => entry.id === id);
+    if (idx < 0) throw new ApiError(404, { error: 'jumpserver instance not found' });
+    if (init?.method === 'PUT') {
+      const req = JSON.parse(String(init.body ?? '{}')) as JumpServerInstanceRequest;
+      mockJumpServers[idx] = { ...mockJumpServers[idx], ...req, hasCredential: mockJumpServers[idx].hasCredential || !!(req.credential || req.accessKeyId || req.accessKeySecret), updatedAt: new Date().toISOString() } as JumpServerInstance;
+      return mockJumpServers[idx] as T;
+    }
+    if (init?.method === 'DELETE') {
+      mockJumpServers.splice(idx, 1);
+      return null as T;
+    }
+    return mockJumpServers[idx] as T;
+  }
   if (path === '/api/v1/agent-keys' && init?.method === 'POST') {
     const req = JSON.parse(String(init.body ?? '{}')) as AgentAPIKeyCreateRequest;
     if (!req.name) throw new ApiError(400, { error: 'name is required' });
@@ -263,6 +332,11 @@ export const api = {
   createApplication: (req: ApplicationRequest) => requestJSON<Application>('/api/v1/applications', { method: 'POST', body: JSON.stringify(req) }),
   approveApplication: (id: string) => requestJSON<Application>(`/api/v1/applications/${encodeURIComponent(id)}/approve`, { method: 'POST' }),
   rejectApplication: (id: string) => requestJSON<Application>(`/api/v1/applications/${encodeURIComponent(id)}/reject`, { method: 'POST' }),
+  jumpServers: () => requestJSON<JumpServerInstance[]>('/api/v1/jumpservers'),
+  createJumpServer: (req: JumpServerInstanceRequest) => requestJSON<JumpServerInstance>('/api/v1/jumpservers', { method: 'POST', body: JSON.stringify(req) }),
+  updateJumpServer: (id: string, req: JumpServerInstanceRequest) => requestJSON<JumpServerInstance>(`/api/v1/jumpservers/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(req) }),
+  deleteJumpServer: (id: string) => requestJSON<void>(`/api/v1/jumpservers/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  testJumpServer: (id: string) => requestJSON<JumpServerConnectionCheck>(`/api/v1/jumpservers/${encodeURIComponent(id)}/test`, { method: 'POST' }),
   agentAPIKeys: () => requestJSON<AgentAPIKey[]>('/api/v1/agent-keys'),
   createAgentAPIKey: (req: AgentAPIKeyCreateRequest) => requestJSON<AgentAPIKeyCreateResponse>('/api/v1/agent-keys', { method: 'POST', body: JSON.stringify(req) }),
   revokeAgentAPIKey: (id: string) => requestJSON<AgentAPIKey>(`/api/v1/agent-keys/${encodeURIComponent(id)}/revoke`, { method: 'POST' }),

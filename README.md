@@ -67,6 +67,10 @@ The language selector in the top bar can switch the web UI between English and C
 
 The sidebar also includes **Agent Key Management**. When `DARWIN_OPS_MCP_API_TOKEN` is enabled, paste the Master Token into that page to list, issue, and revoke per-agent Bearer tokens. The generated secret is shown exactly once; copy it immediately and never paste full secrets into docs or logs.
 
+
+The sidebar also includes **JumpServer Management** for registering multiple JumpServer servers. Each entry stores a sanitized configuration: name, Base URL, version, authentication mode, status, and notes. Token, Private Token, Access Key Secret, and Session credentials are submitted only on create/update; list and detail responses expose only `hasCredential` and never echo plaintext secrets. This version implements multi-instance configuration and connectivity testing first, so future tool execution can route operations by JumpServer instance ID.
+
+
 There is no password login in this MVP. Use the built-in mock identity when executing tools:
 
 - Actor: `mock.user`

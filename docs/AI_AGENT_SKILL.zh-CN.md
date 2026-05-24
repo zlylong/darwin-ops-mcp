@@ -17,3 +17,12 @@
 ```text
 .hermes/skills/darwin-ops-mcp-third-party-ai-agent/SKILL.md
 ```
+
+
+## JumpServer 多实例对接
+
+- 通过 `/api/v1/jumpservers` 管理多个 JumpServer 服务器配置。
+- 前端页面：`/jumpservers`（JumpServer 管理）。
+- 支持认证方式：`token`、`private_token`、`access_key`、`session`，语义参考 JumpServer v2 REST API。
+- 凭据字段仅写入；API 响应只返回 `hasCredential`，不得记录真实 Token、Secret、Session。
+- 当前配置为内存存储，生产环境需迁移持久化并加密保存凭据。

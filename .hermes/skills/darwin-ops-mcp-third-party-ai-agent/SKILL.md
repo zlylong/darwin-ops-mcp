@@ -740,3 +740,10 @@ The web console includes **Agent Key 管理** at `/agent-keys` for Master Token 
 - Revoke active keys.
 
 Never document full `secret` values. Use `[REDACTED]` or only `keyPrefix` in examples and support notes. Current keys are in-memory, so backend restarts invalidate them until persistent storage is added.
+
+
+## JumpServer Integration Notes
+
+Darwin Ops MCP can manage multiple JumpServer server registrations. Use `/api/v1/jumpservers` to discover configured instances and route future JumpServer-facing work by instance ID. Management endpoints require Admin privileges. Credential fields are write-only and are never returned; responses expose only `hasCredential`.
+
+Supported auth mode labels: `token`, `private_token`, `access_key`, `session`. These names follow JumpServer v2 REST API concepts.

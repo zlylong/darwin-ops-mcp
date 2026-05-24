@@ -216,6 +216,121 @@ func (s *UserStore) Delete(id string) error {
 	return errors.New("user not found")
 }
 
+// JumpServer store (in-memory, sanitized reads)
+
+type jumpServerRecord struct {
+	domain.JumpServerInstance
+	Credential      string
+	AccessKeyID     string
+	AccessKeySecret string
+}
+
+// JumpServerStore provides in-memory persistence for multiple JumpServer instances.
+type JumpServerStore struct {
+	mu    sync.RWMutex
+	items []jumpServerRecord
+}
+
+func NewJumpServerStore() *JumpServerStore {
+	return &JumpServerStore{items: make([]jumpServerRecord, 0, 8)}
+}
+
+func sanitizeJumpServer(rec jumpServerRecord) domain.JumpServerInstance {
+	out := rec.JumpServerInstance
+	out.HasCredential = rec.Credential != "" || rec.AccessKeyID != "" || rec.AccessKeySecret != ""
+	return out
+}
+
+func (s *JumpServerStore) Add(instance domain.JumpServerInstance, credential, accessKeyID, accessKeySecret string) domain.JumpServerInstance {
+	if instance.ID == "" {
+		instance.ID = newID("jms")
+	}
+	now := time.Now().UTC()
+	if instance.CreatedAt.IsZero() {
+		instance.CreatedAt = now
+	}
+	if instance.UpdatedAt.IsZero() {
+		instance.UpdatedAt = instance.CreatedAt
+	}
+	if instance.Status == "" {
+		instance.Status = "active"
+	}
+	rec := jumpServerRecord{JumpServerInstance: instance, Credential: credential, AccessKeyID: accessKeyID, AccessKeySecret: accessKeySecret}
+	s.mu.Lock()
+	s.items = append([]jumpServerRecord{rec}, s.items...)
+	s.mu.Unlock()
+	return sanitizeJumpServer(rec)
+}
+
+func (s *JumpServerStore) List() []domain.JumpServerInstance {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	out := make([]domain.JumpServerInstance, len(s.items))
+	for i := range s.items {
+		out[i] = sanitizeJumpServer(s.items[i])
+	}
+	return out
+}
+
+func (s *JumpServerStore) Get(id string) (domain.JumpServerInstance, bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	for _, item := range s.items {
+		if item.ID == id {
+			return sanitizeJumpServer(item), true
+		}
+	}
+	return domain.JumpServerInstance{}, false
+}
+
+func (s *JumpServerStore) Update(id string, fn func(*domain.JumpServerInstance), credential, accessKeyID, accessKeySecret string) (domain.JumpServerInstance, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for i := range s.items {
+		if s.items[i].ID == id {
+			fn(&s.items[i].JumpServerInstance)
+			s.items[i].UpdatedAt = time.Now().UTC()
+			if credential != "" {
+				s.items[i].Credential = credential
+			}
+			if accessKeyID != "" {
+				s.items[i].AccessKeyID = accessKeyID
+			}
+			if accessKeySecret != "" {
+				s.items[i].AccessKeySecret = accessKeySecret
+			}
+			return sanitizeJumpServer(s.items[i]), nil
+		}
+	}
+	return domain.JumpServerInstance{}, errors.New("jumpserver instance not found")
+}
+
+func (s *JumpServerStore) MarkChecked(id, status string, checkedAt time.Time) (domain.JumpServerInstance, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for i := range s.items {
+		if s.items[i].ID == id {
+			s.items[i].Status = status
+			s.items[i].LastCheckedAt = &checkedAt
+			s.items[i].UpdatedAt = checkedAt
+			return sanitizeJumpServer(s.items[i]), nil
+		}
+	}
+	return domain.JumpServerInstance{}, errors.New("jumpserver instance not found")
+}
+
+func (s *JumpServerStore) Delete(id string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for i := range s.items {
+		if s.items[i].ID == id {
+			s.items = append(s.items[:i], s.items[i+1:]...)
+			return nil
+		}
+	}
+	return errors.New("jumpserver instance not found")
+}
+
 func newID(prefix string) string {
 	return prefix + "-" + strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
 }

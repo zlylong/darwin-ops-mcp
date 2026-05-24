@@ -238,6 +238,7 @@ type AgentAPIKeyCreateResponse struct {
 	AgentAPIKey
 	Secret string `json:"secret"`
 }
+
 // ── User management ────────────────────────────────────────────────────────────
 // User represents a server-side user account.
 type User struct {
@@ -250,6 +251,7 @@ type User struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
+
 // UserCreateRequest is used to register a new user account (admin only).
 type UserCreateRequest struct {
 	Username string `json:"username" binding:"required,min=3,max=32"`
@@ -276,4 +278,55 @@ type ChangePasswordRequest struct {
 // ChangePasswordByAdminRequest is used by an admin to reset a user's password.
 type ChangePasswordByAdminRequest struct {
 	NewPassword string `json:"newPassword" binding:"required,min=8,max=128"`
+}
+
+// JumpServer integration
+// JumpServerAuthType describes the authentication mode supported by JumpServer v2 REST API.
+type JumpServerAuthType string
+
+const (
+	JumpServerAuthSession      JumpServerAuthType = "session"
+	JumpServerAuthToken        JumpServerAuthType = "token"
+	JumpServerAuthPrivateToken JumpServerAuthType = "private_token"
+	JumpServerAuthAccessKey    JumpServerAuthType = "access_key"
+)
+
+// JumpServerInstance is a sanitized server configuration. Secret material is never serialized.
+type JumpServerInstance struct {
+	ID            string             `json:"id"`
+	Name          string             `json:"name"`
+	BaseURL       string             `json:"baseUrl"`
+	Version       string             `json:"version,omitempty"`
+	AuthType      JumpServerAuthType `json:"authType"`
+	Status        string             `json:"status"` // "active" | "inactive" | "unreachable"
+	Description   string             `json:"description,omitempty"`
+	HasCredential bool               `json:"hasCredential"`
+	CreatedAt     time.Time          `json:"createdAt"`
+	UpdatedAt     time.Time          `json:"updatedAt"`
+	LastCheckedAt *time.Time         `json:"lastCheckedAt,omitempty"`
+}
+
+// JumpServerInstanceRequest creates or updates a JumpServer server configuration.
+// Credential, AccessKeySecret and similar secret fields are accepted only on write and are never returned.
+type JumpServerInstanceRequest struct {
+	Name            string             `json:"name"`
+	BaseURL         string             `json:"baseUrl"`
+	Version         string             `json:"version"`
+	AuthType        JumpServerAuthType `json:"authType"`
+	Credential      string             `json:"credential,omitempty"`
+	AccessKeyID     string             `json:"accessKeyId,omitempty"`
+	AccessKeySecret string             `json:"accessKeySecret,omitempty"`
+	Status          string             `json:"status,omitempty"`
+	Description     string             `json:"description,omitempty"`
+}
+
+// JumpServerConnectionCheck reports the result of a lightweight connectivity probe.
+type JumpServerConnectionCheck struct {
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	BaseURL   string    `json:"baseUrl"`
+	Reachable bool      `json:"reachable"`
+	Status    string    `json:"status"`
+	Message   string    `json:"message"`
+	CheckedAt time.Time `json:"checkedAt"`
 }

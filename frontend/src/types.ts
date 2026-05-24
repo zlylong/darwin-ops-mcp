@@ -35,3 +35,41 @@ export type ChangePasswordRequest = { oldPassword: string; newPassword: string }
 export type ChangePasswordByAdminRequest = { newPassword: string };
 export type LoginRequest = { username: string; password: string };
 export type LoginResponse = { token: string; user: User; expiresIn: number };
+
+
+// JumpServer integration
+export type JumpServerAuthType = 'session' | 'token' | 'private_token' | 'access_key';
+export type JumpServerStatus = 'active' | 'inactive' | 'unreachable' | string;
+export type JumpServerInstance = {
+  id: string;
+  name: string;
+  baseUrl: string;
+  version?: string;
+  authType: JumpServerAuthType;
+  status: JumpServerStatus;
+  description?: string;
+  hasCredential: boolean;
+  createdAt: string;
+  updatedAt: string;
+  lastCheckedAt?: string;
+};
+export type JumpServerInstanceRequest = {
+  name?: string;
+  baseUrl?: string;
+  version?: string;
+  authType?: JumpServerAuthType;
+  credential?: string;
+  accessKeyId?: string;
+  accessKeySecret?: string;
+  status?: JumpServerStatus;
+  description?: string;
+};
+export type JumpServerConnectionCheck = {
+  id: string;
+  name: string;
+  baseUrl: string;
+  reachable: boolean;
+  status: JumpServerStatus;
+  message: string;
+  checkedAt: string;
+};

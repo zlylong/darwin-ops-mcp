@@ -51,11 +51,12 @@ type Registry struct {
 	keyMu       sync.RWMutex
 	agentKeys   []agentAPIKeyRecord
 	environment domain.Environment
-	users      *storage.UserStore
+	users       *storage.UserStore
+	jumpServers *storage.JumpServerStore
 }
 
-func NewRegistry(policyEngine *policy.Engine, auditor audit.Recorder, executions *storage.ExecutionStore, approvals *storage.ApprovalStore, users *storage.UserStore, env domain.Environment) *Registry {
-	return &Registry{tools: make(map[string]registeredTool), policy: policyEngine, auditor: auditor, executions: executions, approvals: approvals, users: users, environment: env}
+func NewRegistry(policyEngine *policy.Engine, auditor audit.Recorder, executions *storage.ExecutionStore, approvals *storage.ApprovalStore, users *storage.UserStore, jumpServers *storage.JumpServerStore, env domain.Environment) *Registry {
+	return &Registry{tools: make(map[string]registeredTool), policy: policyEngine, auditor: auditor, executions: executions, approvals: approvals, users: users, jumpServers: jumpServers, environment: env}
 }
 
 func (r *Registry) Register(tool domain.Tool, handler Handler) error {
@@ -314,6 +315,8 @@ func (r *Registry) Execute(ctx context.Context, name string, req domain.ExecuteR
 	return result, 200, nil
 }
 
+func (r *Registry) JumpServers() *storage.JumpServerStore { return r.jumpServers }
+
 func (r *Registry) Executions() []domain.Execution               { return r.executions.List() }
 func (r *Registry) Execution(id string) (domain.Execution, bool) { return r.executions.Get(id) }
 func (r *Registry) Approvals() []domain.Approval                 { return r.approvals.List() }
@@ -520,7 +523,6 @@ func (r *Registry) CreateAgentAPIKey(req domain.AgentAPIKeyCreateRequest) (domai
 	r.keyMu.Unlock()
 	return domain.AgentAPIKeyCreateResponse{AgentAPIKey: metadata, Secret: secret}, nil
 }
-
 
 // Users returns the user store.
 func (r *Registry) Users() *storage.UserStore {

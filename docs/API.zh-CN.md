@@ -207,6 +207,63 @@ Prometheus 工具：
 
 
 
+
+## JumpServer 多实例管理
+
+### `GET /api/v1/jumpservers`
+
+列出已登记的 JumpServer 实例。该接口需要 Admin 权限。响应中的实例对象只返回 `hasCredential`，不会返回 Token、Private Token、Access Key Secret 或 Session 凭据明文。
+
+### `POST /api/v1/jumpservers`
+
+登记一个新的 JumpServer 服务器。请求字段：
+
+- `name`: 实例名称，例如 `生产 JumpServer`
+- `baseUrl`: JumpServer 根地址，例如 `https://jumpserver.example.com`
+- `version`: 版本标签，默认建议 `v2`
+- `authType`: `token`、`private_token`、`access_key` 或 `session`
+- `credential`: Token / Private Token / Session 凭据，仅写入，不会回显
+- `accessKeyId`: Access Key ID，仅 Access Key 模式使用
+- `accessKeySecret`: Access Key Secret，仅写入，不会回显
+- `status`: `active`、`inactive` 或 `unreachable`
+- `description`: 备注
+
+示例：
+
+```json
+{
+  "name": "生产 JumpServer",
+  "baseUrl": "https://jumpserver.example.com",
+  "version": "v2",
+  "authType": "token",
+  "credential": "[REDACTED]",
+  "status": "active",
+  "description": "生产堡垒机"
+}
+```
+
+### `GET /api/v1/jumpservers/{id}`
+
+读取单个 JumpServer 实例的脱敏配置。
+
+### `PUT /api/v1/jumpservers/{id}`
+
+更新 JumpServer 实例。凭据字段留空时保留原凭据；填写时替换保存的凭据。响应仍然只返回 `hasCredential`。
+
+### `DELETE /api/v1/jumpservers/{id}`
+
+删除 JumpServer 实例。
+
+### `POST /api/v1/jumpservers/{id}/test`
+
+对指定 JumpServer 做轻量连通性检测。当前探测 `baseUrl + /api/docs/`，返回 `reachable`、`status`、`message` 和 `checkedAt`。该接口用于验证网络与服务可达性，不会在响应中暴露任何凭据。
+
+### 设计说明
+
+- 系统可登记多个 JumpServer 服务器，后续工具调用可通过实例 ID 选择目标堡垒机。
+- 认证方式按 JumpServer v2 REST API 文档预留：Token、Private Token、Access Key、Session。
+- 当前实现仍为内存存储，服务重启后配置会丢失；生产化需要迁移到数据库持久化，并对凭据做加密保存。
+
 ## 用户管理
 
 > 需启用 `DARWIN_OPS_MCP_API_TOKEN` 或通过已登录的 User Token 调用。以下说明基于 master token 场景。

@@ -18,8 +18,8 @@ import (
 	"github.com/zlylong/darwin-ops-mcp/backend/internal/app"
 	"github.com/zlylong/darwin-ops-mcp/backend/internal/audit"
 	"github.com/zlylong/darwin-ops-mcp/backend/internal/config"
-	"github.com/zlylong/darwin-ops-mcp/backend/internal/policy"
 	"github.com/zlylong/darwin-ops-mcp/backend/internal/domain"
+	"github.com/zlylong/darwin-ops-mcp/backend/internal/policy"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -43,7 +43,8 @@ func main() {
 	executions := storage.NewExecutionStore()
 	approvals := storage.NewApprovalStore()
 	users := storage.NewUserStore()
-	registry := app.NewRegistry(policy.NewEngine(), auditor, executions, approvals, users, cfg.Environment)
+	jumpServers := storage.NewJumpServerStore()
+	registry := app.NewRegistry(policy.NewEngine(), auditor, executions, approvals, users, jumpServers, cfg.Environment)
 
 	// Seed a default admin user (password: admin1234) if no users exist
 	if len(users.List()) == 0 {

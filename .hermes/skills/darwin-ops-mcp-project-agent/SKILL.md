@@ -144,3 +144,13 @@ for p in Path('.hermes/skills').glob('*/SKILL.md'):
 print('OK')
 PY
 ```
+
+
+## JumpServer Multi-Instance Integration
+
+- The project supports registering multiple JumpServer servers via `/api/v1/jumpservers` and the frontend `/jumpservers` page.
+- Admin-only management actions: list, create, read, update, delete, and connectivity test (`POST /api/v1/jumpservers/{id}/test`).
+- Supported auth modes align with JumpServer v2 REST API concepts: `token`, `private_token`, `access_key`, and `session`.
+- Secret fields (`credential`, `accessKeySecret`, session material) are write-only. API responses must only expose `hasCredential`; never log or document real credentials.
+- Current storage is in-memory. Treat it as a development slice; productionization requires database persistence and encrypted credential storage.
+- For frontend work, update both `frontend/src/App.tsx` and the real Vite entry `frontend/src/main.tsx`, then deploy to `192.168.20.166` for verification.

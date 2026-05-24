@@ -17,7 +17,6 @@ import (
 	"github.com/zlylong/darwin-ops-mcp/backend/internal/storage"
 )
 
-
 // createTestRegistryForApp is a local alias so we don't conflict with router_test's createTestRegistry.
 func createTestRegistryForApp() *app.Registry {
 	return app.NewRegistry(
@@ -26,6 +25,7 @@ func createTestRegistryForApp() *app.Registry {
 		storage.NewExecutionStore(),
 		storage.NewApprovalStore(),
 		storage.NewUserStore(),
+		storage.NewJumpServerStore(),
 		domain.EnvDevelopment,
 	)
 }

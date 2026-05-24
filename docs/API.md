@@ -207,6 +207,63 @@ The backend registers a common Linux operations tool set in the Tools Center. In
 
 
 
+
+## JumpServer Multi-Instance Management
+
+### `GET /api/v1/jumpservers`
+
+Lists registered JumpServer instances. Admin role is required. Responses include `hasCredential` only; plaintext Token, Private Token, Access Key Secret, and Session credentials are never returned.
+
+### `POST /api/v1/jumpservers`
+
+Registers a new JumpServer server. Request fields:
+
+- `name`: instance name, for example `Production JumpServer`
+- `baseUrl`: JumpServer root URL, for example `https://jumpserver.example.com`
+- `version`: version label, `v2` is recommended by default
+- `authType`: `token`, `private_token`, `access_key`, or `session`
+- `credential`: Token / Private Token / Session credential, write-only and never echoed
+- `accessKeyId`: Access Key ID for Access Key mode
+- `accessKeySecret`: Access Key Secret, write-only and never echoed
+- `status`: `active`, `inactive`, or `unreachable`
+- `description`: free-form notes
+
+Example:
+
+```json
+{
+  "name": "Production JumpServer",
+  "baseUrl": "https://jumpserver.example.com",
+  "version": "v2",
+  "authType": "token",
+  "credential": "[REDACTED]",
+  "status": "active",
+  "description": "Production bastion"
+}
+```
+
+### `GET /api/v1/jumpservers/{id}`
+
+Reads one JumpServer instance as a sanitized configuration object.
+
+### `PUT /api/v1/jumpservers/{id}`
+
+Updates a JumpServer instance. Empty credential fields keep the existing credential; non-empty values replace the stored credential. Responses still include only `hasCredential`.
+
+### `DELETE /api/v1/jumpservers/{id}`
+
+Deletes a JumpServer instance.
+
+### `POST /api/v1/jumpservers/{id}/test`
+
+Runs a lightweight connectivity probe for the selected JumpServer. The current probe checks `baseUrl + /api/docs/` and returns `reachable`, `status`, `message`, and `checkedAt`. It verifies network/service reachability and never exposes credentials.
+
+### Design notes
+
+- The system can register multiple JumpServer servers; future tool calls can route to a selected bastion by instance ID.
+- Authentication modes are aligned with JumpServer v2 REST API concepts: Token, Private Token, Access Key, and Session.
+- The current implementation is in-memory. Production use should migrate this configuration to persistent storage and encrypt credentials at rest.
+
 ## User Management
 
 > Requires `DARWIN_OPS_MCP_API_TOKEN` or a valid User Token. Described here for master token usage.

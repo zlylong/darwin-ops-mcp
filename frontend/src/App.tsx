@@ -17,6 +17,7 @@ import { AuditPage } from './pages/AuditPage';
 import { ApprovalsPage } from './pages/ApprovalsPage';
 import { ToolApplicationsPage } from './pages/ToolApplicationsPage';
 import { AgentAPIKeysPage } from './pages/AgentAPIKeysPage';
+import { JumpServersPage } from './pages/JumpServersPage';
 import { LoginPage } from './pages/LoginPage';
 import { UserProfilePage } from './pages/UserProfilePage';
 import { UsersPage } from './pages/UsersPage';
@@ -56,6 +57,7 @@ const menuItems = [
   { key: '/tool-applications', icon: <ToolOutlined />, label: '工具审批中心' },
   { key: '/profile', icon: <UserOutlined />, label: '个人中心' },
   { key: '/users', icon: <KeyOutlined />, label: '用户管理' },
+  { key: '/jumpservers', icon: <ApiOutlined />, label: 'JumpServer 管理' },
   { key: '/agent-keys', icon: <KeyOutlined />, label: 'Agent Key 管理' },
 ];
 
@@ -89,6 +91,7 @@ function AppShell() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/profile" element={<UserProfilePage />} />
             <Route path="/users" element={<UsersPage />} />
+            <Route path="/jumpservers" element={<JumpServersPage />} />
             <Route path="/agent-keys" element={<AgentAPIKeysPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
